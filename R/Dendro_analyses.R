@@ -77,3 +77,14 @@ plot(dendroclim$Annual,dendroclim$Picea_abies_StdCrn,xlab=expression("Annual Tem
      ylab="Detrended growth",main="Picea")
 lmPa<-lm(Picea_abies_StdCrn~Annual,data=dendroclim)
 summary(lmPa)
+
+cor.test(dendroclim$Pinus_syl_StdCrn,dendroclim$Annual,data=dendroclim)
+cor.test(dendroclim$Picea_abies_StdCrn,dendroclim$Annual,data=dendroclim)
+
+par(mfrow=c(2,1))
+rmadendroT<-rma(measure="COR",ri=c(0.15,0.017),ni=c(113,113))
+forest(rmadendroT,slab=c("Pinus","Picea"),main="Forest plot - Detrended growth vs time")
+
+esdendro<-escalc(measure="COR",ri=c(0.23,0.0003),ni=c(113,113))
+rmadendro<-rma(measure="COR",ri=c(0.23,0.0003),ni=c(113,113))
+forest(rmadendro,slab=c("Pinus","Picea"),main="Forest plot - Detrended growth vs climate")
