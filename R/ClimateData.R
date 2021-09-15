@@ -103,6 +103,7 @@ par(mar=c(1,5,1,1))
 plot(1900:2020,yearavg,type='b',
      xlab="",ylab=expression("Annual Temperature ("*~degree*C*")"),las=1,pch=16,cex=0.5)
 abline(v=c(1946,1979),lty=2)
+plot(segAnnual,add=T)
 #lines(1900:2020,frollmean(yearavg,5),col=2,lwd=2)
 visreg(gam1,residuals=TRUE,xlab="")
 abline(v=c(1946,1979),lty=2)

@@ -66,10 +66,14 @@ climdata<-read.csv("Data/ClimateData_forAnalyses.csv",header=T)
 
 dendroclim<-merge(climdata,dendrodat,by='Year')
 
-par(mfrow=c(1,1))
-par(mar=c(5,5,3,1))
+par(mfrow=c(2,1))
+par(mar=c(4,5,2,1))
 plot(dendroclim$Annual,dendroclim$Pinus_syl_StdCrn,xlab=expression("Annual Temperature ("*~degree*C*")"),las=1,
      ylab="Detrended growth",main="Pinus")
 lm1<-lm(Pinus_syl_StdCrn~Annual,data=dendroclim)
 summary(lm1)
 abline(lm1)
+plot(dendroclim$Annual,dendroclim$Picea_abies_StdCrn,xlab=expression("Annual Temperature ("*~degree*C*")"),las=1,
+     ylab="Detrended growth",main="Picea")
+lmPa<-lm(Picea_abies_StdCrn~Annual,data=dendroclim)
+summary(lmPa)
