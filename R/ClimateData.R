@@ -140,3 +140,51 @@ plot(dSTdt$data,dSTdt$derivative,type='l',xlab="Year",ylim=c(-0.06,0.12))
 lines(dSTdt$data,dSTdt$upper,type='l',col=grey(0.5))
 lines(dSTdt$data,dSTdt$lower,type='l',col=grey(0.5))
 abline(h=0)
+
+
+
+##Oceanic data
+library(ncdf4)
+ncbud = nc_open("Data/bud.nc")
+
+#Temperature data at different depths and times
+
+temp<-ncvar_get(ncbud,"TEMP_ADJUSTED")
+time<-ncvar_get(ncbud,"TIME") #Days since 1950.01.01
+depth<-ncvar_get(ncbud,"DEPH")#Depth in m 
+
+seadate<-as.Date(time, origin = '1950-01-01')
+seayear<-format(seadate,format="%Y")
+seamonth<-format(seadate,format="%m")
+table(seayear,seamonth)
+
+#Series at  depth
+temp1m<-temp[1,]
+temp5m<-temp[2,]
+temp200m<-temp[11,]
+plot(seadate,temp1m,type='l')
+
+#Annual averages
+countrecordsperyr<-(tapply(temp5m,seayear,length))
+
+yearseq<-data.frame(Year=seq(min(seayear),max(seayear),by=1))
+
+temp1mAnn<-data.frame(tapply(temp1m,seayear,max))#Max temp as variable records
+names(temp1mAnn)[1]<-"Temp1m"
+temp1mAnn$Year<-rownames(temp1mAnn)
+temp1mdf<-merge.data.frame(temp1mAnn,yearseq,all.y=T)
+plot(temp1mdf$Year,temp1mdf$Temp1m,type='b')
+
+
+temp5mAnn<-data.frame(tapply(temp5m,seayear,max))#Max temp as variable records
+names(temp5mAnn)[1]<-"Temp5m"
+temp5mAnn$Year<-rownames(temp5mAnn)
+temp5mdf<-merge.data.frame(temp5mAnn,yearseq,all.y=T)
+plot(temp5mdf$Year,temp5mdf$Temp5m,type='b')
+
+
+temp200mAnn<-data.frame(tapply(temp200m,seayear,max))#Max temp as variable records
+names(temp200mAnn)[1]<-"Temp200m"
+temp200mAnn$Year<-rownames(temp200mAnn)
+temp200mdf<-merge.data.frame(temp200mAnn,yearseq,all.y=T)
+plot(temp200mdf$Year,temp200mdf$Temp200m,type='b',main="Max annual temp at 200m")
