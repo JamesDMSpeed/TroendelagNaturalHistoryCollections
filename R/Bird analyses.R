@@ -119,8 +119,13 @@ plot(birds$year,birds$graasisi,type='b',las=1,main="Redpoll")
 
 #Temporal correlations
 birdcoryeardf<-data.frame(species=names(birds)[3:10],r=rep(NA,times=8),n=rep(length(birds$lovsange[!is.na(birds$lovsange)]),times=8))
+birdregyeardf<-data.frame(species=names(birds)[3:10],b=rep(NA,times=8),se=rep(length(birds$lovsange[!is.na(birds$lovsange)]),times=8))
+
 for(i in 1:8){
 birdcoryeardf$r[i]<-cor(birds$year,birds[,2+i],use="pairwise.complete.obs")
+birdregyeardf$b[i]<-summary(lm(birds[,2+i]~birds$year))$coefficients[2,1]
+birdregyeardf$se[i]<-summary(lm(birds[,2+i]~birds$year))$coefficients[2,2]
+
 }
 
 #Quick metaanalysis
@@ -128,24 +133,45 @@ esbirdyr<-escalc(measure="COR",ri=birdcoryeardf$r,ni=birdcoryeardf$n)
 rmabirdyr<-rma(esbirdyr[c(1,4,5,6,7),])
 forest(rmabirdyr,slab=birdcoryeardf$species[c(1,4,5,6,7)],main="Birds - Year")
 
+rmabirdyrreg<-rma(yi=birdregyeardf$b[c(1,4,5,6,7)],sei=birdregyeardf$se[c(1,4,5,6,7)])
+forest(rmabirdyrreg,slab=birdcoryeardf$species[c(1,4,5,6,7)],main="Birds - Year",xlab="Regression slope")
 
 #Temperature correlations
 birdcortempdf<-data.frame(species=names(birdclim)[3:10],r=rep(NA,times=8),n=rep(length(birdclim$lovsange[!is.na(birds$lovsange)]),times=8))
+birdregtempdf<-data.frame(species=names(birdclim)[3:10],b=rep(NA,times=8),se=rep(length(birdclim$lovsange[!is.na(birds$lovsange)]),times=8))
+
 for(i in 1:8){
   birdcortempdf$r[i]<-cor(birdclim$Annual,birdclim[,2+i],use="pairwise.complete.obs")
-}
+  birdregtempdf$b[i]<-summary(lm(birdclim[,2+i]~birdclim$Annual))$coefficients[2,1]
+  birdregtempdf$se[i]<-summary(lm(birdclim[,2+i]~birdclim$Annual))$coefficients[2,2]
+  }
+
+
 esbirdtemp<-escalc(measure="COR",ri=birdcortempdf$r,ni=birdcortempdf$n)
 rmabirdtemp<-rma(esbirdtemp[c(1,4,5,6,7),],measure = "COR")
 forest(rmabirdtemp,slab=birdcortempdf$species[c(1,4,5,6,7)],main="Birds - Temperature")
 
+rmabirdtempreg<-rma(yi=birdregtempdf$b[c(1,4,5,6,7)],sei=birdregtempdf$se[c(1,4,5,6,7)],measure="GEN")
+forest(rmabirdtempreg,slab=birdcortempdf$species[c(1,4,5,6,7)],main="Birds - Temperature",xlab="Regression slope")
+
+#COrrelative forest plot
 par(mfrow=c(2,1))
 par(mar=c(4,1,3,1))
 forest(rmabirdyr,slab=birdcoryeardf$species[c(1,4,5,6,7)],main="Birds - Year")
 forest(rmabirdtemp,slab=birdcortempdf$species[c(1,4,5,6,7)],main="Birds - Temperature")
 
+#Beta forest plot
+par(mfrow=c(2,1))
+par(mar=c(4,1,3,1))
+forest(rmabirdyrreg,slab=birdcoryeardf$species[c(1,4,5,6,7)],main="Birds - Year",xlab="Regression slope")
+forest(rmabirdtempreg,slab=birdcortempdf$species[c(1,4,5,6,7)],main="Birds - Temperature",xlab="Regression slope")
 
-write.csv(birdcoryeardf,"BirdYearCor.csv")
-write.csv(birdcortempdf,"BirdTempCor.csv")
+
+write.csv(birdcoryeardf,"Data/Birds/BirdYearCor.csv")
+write.csv(birdcortempdf,"Data/Birds/BirdTempCor.csv")
+write.csv(birdregyeardf,"Data/Birds/BirdYearReg.csv")
+write.csv(birdregtempdf,"Data/Birds/BirdTempReg.csv")
+
 
 #Temperature models
 par(mfrow=c(2,1))
