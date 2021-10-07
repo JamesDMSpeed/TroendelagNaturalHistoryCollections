@@ -127,10 +127,17 @@ quantile(sp2$Flowering.intensity,na.rm=T)
 plantphenCordf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.name)),
                            R=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))),
                            N=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))))
+plantphenRegdf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.name)),
+                           b=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))),
+                           se=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))))
+
 
 plantphenTempCordf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.name)),
                            R=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))),
                            N=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))))
+plantphenTempRegdf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.name)),
+                               b=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))),
+                               se=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))))
 
 
 speciesyrdf<-list()
@@ -159,11 +166,16 @@ plantphenCordf$R[plantphenCordf$Species==spk$Scientific.name[1]]<-cor(spkdf$Year
 plantphenCordf$N[plantphenCordf$Species==spk$Scientific.name[1]]<-length(na.omit(spkdf$DoY))
 plantphenTempCordf$R[plantphenTempCordf$Species==spk$Scientific.name[1]]<-cor(spkdfClim$Annual,spkdfClim$DoY,use='pairwise')
 plantphenTempCordf$N[plantphenTempCordf$Species==spk$Scientific.name[1]]<-length(na.omit(spkdfClim$DoY))
-
+plantphenRegdf$b[plantphenCordf$Species==spk$Scientific.name[1]]<-summary(lm(spkdf$DoY~spkdf$Year))$coefficients[2,1]
+plantphenRegdf$se[plantphenCordf$Species==spk$Scientific.name[1]]<-summary(lm(spkdf$DoY~spkdf$Year))$coefficients[2,2]
+plantphenTempRegdf$b[plantphenRegdf$Species==spk$Scientific.name[1]]<-summary(lm(spkdfClim$DoY~spkdfClim$Annual))$coefficients[2,1]
+plantphenTempRegdf$se[plantphenRegdf$Species==spk$Scientific.name[1]]<-summary(lm(spkdfClim$DoY~spkdfClim$Annual))$coefficients[2,2]
 }
 
 plantphenCordf
 plantphenTempCordf
+plantphenRegdf
+plantphenTempRegdf
 speciesyrdf
 
 #Meta analyses -> NB only species with >= 5 years of records
@@ -174,6 +186,12 @@ forest(rmaplantphenyr,slab=plantphenCordf$Species[plantphenCordf$N>=5],main="Pla
 esplantphentemp<-escalc(measure="COR",ri=plantphenTempCordf$R[plantphenTempCordf$N>=5],ni=plantphenTempCordf$N[plantphenTempCordf$N>=5])
 rmaplantphentemp<-rma(esplantphentemp)
 forest(rmaplantphentemp,slab=plantphenTempCordf$Species[plantphenTempCordf$N>=5],main="Plant phenology - Temperature",sub="Earliest DoY with 75% quartile species flowering intensity")
+
+rmaplantphenReg<-rma(yi=plantphenRegdf$b[plantphenCordf$N>=5],sei=plantphenRegdf$se[plantphenCordf$N>=5],measure="GEN")
+forest(rmaplantphenReg,slab=plantphenRegdf$Species[plantphenCordf$N>=5],main="Plant phenology - Year",xlab="Regression Slope",sub="Change in earliest DoY of flowering intensity at 75% quantile of species maximum")
+
+rmaplantphenTempReg<-rma(yi=plantphenTempRegdf$b[plantphenCordf$N>=5],sei=plantphenTempRegdf$se[plantphenCordf$N>=5],measure="GEN")
+forest(rmaplantphenTempReg,slab=plantphenTempRegdf$Species[plantphenCordf$N>=5],main="Plant phenology - Temperature",xlab="Regression Slope",sub="Change in earliest DoY of flowering intensity at 75% quantile of species maximum")
 
 
 segspeciesdf<-data.frame(Species=plantphenCordf$Species,P=rep(NA,times=24),
@@ -212,3 +230,27 @@ segspeciesdf[segspeciesdf$P<0.05,]
 write.csv(plantphenCordf,"Data/Plants/PlantYearCor.csv")
 write.csv(plantphenTempCordf,"Data/Plants/PlantTempCor.csv")
 write.csv(segspeciesdf,"Data/Plants/PlantYearBreakpoints.csv")
+write.csv(plantphenRegdf,"Data/Plants/PlantYearReg.csv")
+write.csv(plantphenTempRegdf,"Data/Plants/PlantTempReg.csv")
+
+
+par(mfrow=c(2,1))
+par(mar=c(3,3,1,1))
+with(speciesyrdf[[7]],plot(Year,DoY,main=levels(as.factor(plantphenCordf$Species))[7]))
+lm1<-with(speciesyrdf[[7]],lm(DoY~Year))
+abline(lm1)
+summary(lm1)     
+seglm1<-segmented(lm1,seg.Z=~Year,nspsi=2, data=speciesyrdf[[7]])
+seglm1
+plot(seglm1,add=T,col=2)
+abline(v=seglm1$psi[[2]],col=2)
+
+with(speciesyrdf[[21]],plot(Year,DoY,main=levels(as.factor(plantphenCordf$Species))[21]))
+lm1<-with(speciesyrdf[[21]],lm(DoY~Year))
+abline(lm1)
+summary(lm1)     
+seglm1<-segmented(lm1,seg.Z=~Year,nspsi=2, data=speciesyrdf[[21]])
+seglm1
+plot(seglm1,add=T,col=2)
+abline(v=seglm1$psi[[2]],col=2)
+
