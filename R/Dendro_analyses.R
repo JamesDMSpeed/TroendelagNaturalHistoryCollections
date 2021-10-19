@@ -9,7 +9,7 @@ library(visreg)
 dendrodat<-read.csv("Data/Dendro/Dendro.csv",header=T,sep=";",dec=",")
 names(dendrodat)[1]<-"Year"
 
-dendrodat<-dendrodat[dendrodat$Year>=1900,]
+dendrodat1900<-dendrodat[dendrodat$Year>=1900,]
 
 
 plot(dendrodat$Year,dendrodat$Pinus_syl_StdCrn,type='b')
@@ -88,3 +88,16 @@ forest(rmadendroT,slab=c("Pinus","Picea"),main="Forest plot - Detrended growth v
 esdendro<-escalc(measure="COR",ri=c(0.23,0.0003),ni=c(113,113))
 rmadendro<-rma(measure="COR",ri=c(0.23,0.0003),ni=c(113,113))
 forest(rmadendro,slab=c("Pinus","Picea"),main="Forest plot - Detrended growth vs climate")
+
+
+dendrocortemp<-data.frame(Species=c("Pinus_sylvestris","Picea abies"),R=c(0.15,0.017),N=c(113,113))
+dendroregtemp<-data.frame(Species=c("Pinus_sylvestris","Picea abies"),b=c(summary(lm1)$coefficients[2,1],summary(lmPa)$coefficients[2,1]),se=c(summary(lm1)$coefficients[2,2],summary(lmPa)$coefficients[2,1]))
+
+dendrocoryear<-data.frame(Species=c("Pinus_sylvestris","Picea abies"),R=c(-0.0039,0.049),N=c(464,464))
+dendroregyear<-data.frame(Species=c("Pinus_sylvestris","Picea abies"),b=c(summary(lmPinsyl)$coefficients[2,1],summary(lmPicea)$coefficients[2,1]),se=c(summary(lmPinsyl)$coefficients[2,2],summary(lmPicea)$coefficients[2,1]))
+
+write.csv(dendrocoryear,"Data/Dendro/dendrocoryear")
+write.csv(dendroregyear,"Data/Dendro/dendroregyear")
+write.csv(dendrocortemp,"Data/Dendro/dendrocortemp")
+write.csv(dendroregtemp,"Data/Dendro/dendroregtemp")
+

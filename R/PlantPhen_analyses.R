@@ -178,6 +178,24 @@ plantphenRegdf
 plantphenTempRegdf
 speciesyrdf
 
+#Combine yrs into a single df
+spyrdf<-rbindlist(speciesyrdf,idcol=T)
+spyrdf$.id<-as.factor(spyrdf$.id)
+levels(spyrdf$.id)<-levels(plantphenCordf$Species)
+
+#Yr range per sp
+yrrange<-data.frame(Species=levels(plantphenCordf$Species),From=rep(NA,times=24),To=rep(NA,times=24))
+for(i in 1:24){
+yrrange$From[i]<-with(speciesyrdf[[i]],min(Year[!is.na(DoY)]))
+yrrange$To[i]<-with(speciesyrdf[[i]],max(Year[!is.na(DoY)]))
+}
+yrrange$Duration<-yrrange$To-yrrange$From
+
+plantphenCordf$Duration<-yrrange$Duration
+plantphenTempCordf$Duration<-yrrange$Duration
+
+with(plantphenCordf[plantphenCordf$N>=5,],plot(Duration,(R*R)))
+
 #Meta analyses -> NB only species with >= 5 years of records
 esplantphenyr<-escalc(measure="COR",ri=plantphenCordf$R[plantphenCordf$N>=5],ni=plantphenCordf$N[plantphenCordf$N>=5])
 rmaplantphenyr<-rma(esplantphenyr)
@@ -196,6 +214,8 @@ forest(rmaplantphenTempReg,slab=plantphenTempRegdf$Species[plantphenCordf$N>=5],
 
 segspeciesdf<-data.frame(Species=plantphenCordf$Species,P=rep(NA,times=24),
                          Bp1=rep(NA,times=24),Bp1se=rep(NA,times=24),Bp2=rep(NA,times=24),Bp2se=rep(NA,times=24))
+
+
 
 #Segmented regressions
 #for(i in which(plantphenTempCordf$N>=5)){
