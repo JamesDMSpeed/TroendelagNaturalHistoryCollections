@@ -5,8 +5,13 @@ library(metafor)
 
 marineinverts<-read.csv("Data/Marine invertebrates/marineIVlatcull.csv",header=T)
 
+#Temperature
+#Marine data
+marinetemp<-read.csv("Data/MarineMaxTemp200m.csv",header=T)
+marineinverts_temp<-merge(marineinverts,marinetemp,by.x="year",by.y="Year")
+marineinvertes_temp#Too few years with temperature data and invertebrate data to look at ES
 
-#Effect sizes for q10 and q90s
+#Effect sizes for q10 medians and q90s
 
 marineq90coryear<-data.frame(Species=levels(marineinverts$species_sp),R=(rep(NA,times=9)),N=rep(NA,times=9),Duration=rep(NA,times=9))
 marineq90regyear<-data.frame(Species=levels(marineinverts$species_sp),b=(rep(NA,times=9)),se=rep(NA,times=9))
@@ -14,7 +19,6 @@ marineq10coryear<-data.frame(Species=levels(marineinverts$species_sp),R=(rep(NA,
 marineq10regyear<-data.frame(Species=levels(marineinverts$species_sp),b=(rep(NA,times=9)),se=rep(NA,times=9))
 marinemedcoryear<-data.frame(Species=levels(marineinverts$species_sp),R=(rep(NA,times=9)),N=rep(NA,times=9),Duration=rep(NA,times=9))
 marinemedregyear<-data.frame(Species=levels(marineinverts$species_sp),b=(rep(NA,times=9)),se=rep(NA,times=9))
-
 
 
 for(i in 1:9){
@@ -38,7 +42,6 @@ marinemedcoryear$Duration[i]<-with(marineinverts[marineinverts$species_sp==level
 lmI<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],lm(median~year))
 marinemedregyear$b[i]<-summary(lmI)$coefficients[2,1]
 marinemedregyear$se[i]<-summary(lmI)$coefficients[2,2]
-
 }
 
 marineq90coryear
@@ -48,6 +51,7 @@ marineq10regyear
 marinemedcoryear
 marinemedregyear
 
+par(mfrow=c(1,3))
 
 marineq90year_rma<-rma(yi=marineq90regyear$b,sei=marineq90regyear$se,measure="GEN",weighted=F,method="FE")
 marineq90year_rma
@@ -60,6 +64,7 @@ forest(marineq10year_rma,slab=marineq10regyear$Species,main="Tailing edge - year
 marinemedyear_rma<-rma(yi=marinemedregyear$b,sei=marinemedregyear$se,measure="GEN",weighted=F,method="FE")
 marinemedyear_rma
 forest(marinemedyear_rma,slab=marinemedregyear$Species,main="Median - year",xlab="Regression slope")
+
 
 
 write.csv(marineq10coryear,"Data/Marine invertebrates/marineeq10coryear")

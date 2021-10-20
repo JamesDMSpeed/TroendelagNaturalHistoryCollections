@@ -188,3 +188,5 @@ names(temp200mAnn)[1]<-"Temp200m"
 temp200mAnn$Year<-rownames(temp200mAnn)
 temp200mdf<-merge.data.frame(temp200mAnn,yearseq,all.y=T)
 plot(temp200mdf$Year,temp200mdf$Temp200m,type='b',main="Max annual temp at 200m")
+
+write.csv(temp200mAnn,"Data/MarineMaxTemp200m.csv")
