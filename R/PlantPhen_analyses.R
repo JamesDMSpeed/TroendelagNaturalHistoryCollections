@@ -97,7 +97,6 @@ abline(h=0)
 cor.test(plantphendat$Year[plantphendat$Scientific.name==levels(plantphendat$Scientific.name)[2]
                        & !is.na(plantphendat$Flowering.intensity)],
      residuals(gam1))
-#Problem here is that the 
 
 dgam1<-derivatives(gam1)
 par(mfrow=c(2,1))

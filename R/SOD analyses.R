@@ -35,3 +35,13 @@ alldiststemp$edge<-c(rep("leading",times=nrow(leadingedgetemp)),rep('tailing',ti
 
 write.csv(alldistsyr,"Data/SOD/SODYearReg.csv")
 write.csv(alldiststemp,"Data/SOD/SODTempReg.csv")
+
+
+#Individual species regression slopes
+indspp<-read.csv("Data/SOD/regslopes_individualSpecies.csv",header=T)
+indspp10<-indspp[indspp$N>=10,]
+
+esleading<-escalc(yi=indspp10$regslope_year_leading,sei=indspp10$se_year_leading,measure="GEN")
+rmaleading<-rma(esleading,method="FE",weighted=T,mods=~indspp10$kingdom-1)
+rmaleading
+forest(rmaleading,slab=indspp10$species)

@@ -56,20 +56,42 @@ marineq10coryear<-read.csv("Data/Marine invertebrates/marineeq10coryear")
 marineq90coryear<-read.csv("Data/Marine invertebrates/marineeq90coryear")
 
 marinecoryear<-rbind(marineq10coryear,marineq90coryear)
+
+marineq90coryear$EcoEffect<-c(rep("Distribution_advance",times=9))
+marineq90coryear$Kingdom<-rep("Animalia",times=9)
+
 marinecoryear$EcoEffect<-c(rep("Distribution_advance",times=9),rep("Distribution-tail",times=9))
 marinecoryear$Kingdom<-rep("Animalia",times=9)
 
+#Terrestrial distributions
+
+indspp<-read.csv("Data/SOD/regslopes_individualSpecies.csv",header=T)
+indspp10<-indspp[indspp$N>=10,]
+names(indspp10)[c(2,3,8)]<-c("Species","Kingdom","R")
+indspp10$EcoEffect<-rep("Distribution",times=nrow(indspp10))
+indsppleading<-indspp10[,c(1:2,8,6,7,18,3)]
+
+
+#Jonsvannet inverts
+jonsinvMaxAb<-read.csv("Data/Inverts/jonsinvMaxAbCordf")
+jonsinvMaxAb$EcoEffect<-rep("Abundance",times=nrow(jonsinvMaxAb))
+jonsinvMaxAb$Kingdom<-rep("Animalia",times=nrow(jonsinvMaxAb))
+
 #Bind together
-allcorefyear<-rbind(plantefcoryear,birdefcoryear,dendrocoryear,marinecoryear)
-allcoreftemp<-rbind(plantefcortemp,birdefcortemp,dendrocortemp)
+allcorefyear<-rbind(plantefcoryear,birdefcoryear,marineq90coryear,indsppleading,jonsinvMaxAb)
+#allcoreftemp<-rbind(plantefcortemp,birdefcortemp,dendrocortemp)
 
 
 #Plot study duration against R2
-par(mfrow=c(2,1))
+#par(mfrow=c(2,1))
 with(allcorefyear,plot(Duration,(R*R),ylab="R2",main="Temporal effect size",col=as.factor(allcoreftemp$EcoEffect),pch=(allcorefyear$EcoEffect)))
-with(allcoreftemp,plot(Duration,(R*R),ylab="R2",main="Temperature effect size",col=as.factor(allcoreftemp$EcoEffect)))#But temperature data only 100yrs
+#with(allcoreftemp,plot(Duration,(R*R),ylab="R2",main="Temperature effect size",col=as.factor(allcoreftemp$EcoEffect)))#But temperature data only 100yrs
 #rect(0,0,100,1,col=1,border=F,density=10)
 abline(v=120)
+
+lm1<-with(allcorefyear,lm(I(R^2) ~Duration*Kingdom))
+summary(lm1)
+anova(lm1)
 
 
 # Main forest plots -------------------------------------------------------
@@ -80,7 +102,13 @@ abline(v=120)
 
 #Plants
 plantefregyear<-read.csv("Data/Plants/PlantYearReg.csv",header=T)
+plantefregtemp<-read.csv("Data/Plants/PlantTempReg.csv",header=T)
+
 plantefregyear<-plantefregyear[plantefregyear$Species%in%plantefcoryear$Species,]#Drop species with <5 years
+plantefregyear
+plantefregyear$Kingdom<-rep('Plantae',times=nrow(plantefregyear))
+plantefregyear$EcoEffect<-rep('Phenology',times=nrow(plantefregyear))
+
 
 #Birds
 birdefregyear<-read.csv("Data/Birds/BirdYearReg.csv",header=T)
@@ -88,20 +116,29 @@ birdefregyear$Duration<-rep(51,times=nrow(birdefregyear))
 birdefregyear$Species<-c("Willow warbler","Brambling","Fieldfare","Tree pipit","Bluethroat","Reed bunting","Redwing","Redpoll")
 birdefregyear<-birdefregyear[!birdefregyear$Species%in%c("Fieldfare","Brambling","Redpoll"),]
 names(birdefregyear)[2:4]<-c("Species","R","N")
+birdefregyear$Kingdom<-rep("Animalia",times=nrow(birdefregyear))
+birdefregyear$EcoEffect<-rep("Abundance",times=nrow(birdefregyear))
 
 #Marine inverts
 
-marineq10regyear<-read.csv("Data/Marine invertebrates/marineeq10regryear")
+#marineq10regyear<-read.csv("Data/Marine invertebrates/marineeq10regryear")
 marineq90regyear<-read.csv("Data/Marine invertebrates/marineeq90regyear")
+marineq90regyear$Kingdom<-rep("Animalia",times=nrow(marineq90regyear))
+marineq90regyear$EcoEffect<-rep("Distribution",times=nrow(marineq90regyear))
 
+#SODs
+indsppleading
 
+#Jonsvannet
+jonsinvMaxAbRegdf<-read.csv('Data/Inverts/jonsinvMaxAbRegdf')
+jonsinvMaxAbTempRegdf<-read.csv('Data/Inverts/jonsinvMaxAbTempRegdf')
 
-
+jonsinvMaxAbRegdf$Kingdom<-rep("Animalia",times=nrow(jonsinvMaxAbRegdf))
+jonsinvMaxAbRegdf$EcoEffect<-rep("Abundance",times=nrow(jonsinvMaxAbRegdf))
 
 #Unweighted fixed effects models for each
-esbirdyear<-escalc(measure="GEN",b=allregefyear$R,se=allregefyear$N)
-allregefrma<-rma(esallregyear,measure = "reg",method="FE")
-forest(allregefrma,main="All year")
+
+
 
 
 
