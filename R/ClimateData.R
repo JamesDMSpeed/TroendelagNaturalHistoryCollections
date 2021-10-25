@@ -190,3 +190,29 @@ temp200mdf<-merge.data.frame(temp200mAnn,yearseq,all.y=T)
 plot(temp200mdf$Year,temp200mdf$Temp200m,type='b',main="Max annual temp at 200m")
 
 write.csv(temp200mAnn,"Data/MarineMaxTemp200m.csv")
+
+
+
+#Figure
+
+tempwithmar<-merge(temp200mAnn,data.frame(cbind(Year=1900:2020,yearavg)),all.y=T)
+
+par(mfrow=c(4,1))
+par(mar=c(1,5,1,1))
+plot(1900:2020,yearavg,type='b',
+     xlab="",ylab=expression("Annual Temperature ("*~degree*C*")"),las=1,pch=16,cex=0.5)
+abline(v=c(1946,1979),lty=2)
+plot(segAnnual,add=T)
+#lines(1900:2020,frollmean(yearavg,5),col=2,lwd=2)
+visreg(gam1,residuals=TRUE,xlab="")
+abline(v=c(1946,1979),lty=2)
+
+plot(dTdt$data,dTdt$derivative,type='l',xlab="",ylim=c(-0.06,0.12),las=1)
+lines(dTdt$data,dTdt$upper,type='l',col=grey(0.5))
+lines(dTdt$data,dTdt$lower,type='l',col=grey(0.5))
+abline(h=0)
+abline(v=c(1946,1979),lty=2)
+par(mar=c(5,5,1,1))
+plot(tempwithmar$Year,tempwithmar$Temp200m,type='b',ylab=expression("Sea temperature("*~degree*C*")"),xlab="Year")
+
+                  
