@@ -44,7 +44,11 @@ atnacorYeardf<-data.frame(Elevation=c('380m','710m','1060m',"1120m"),
                                       n=c(length(stationdf$X380[!is.na(stationdf$X380)]),
                                       length(stationdf$X710[!is.na(stationdf$X710)]),
                                              length(stationdf$X1060[!is.na(stationdf$X1060)]),
-                                      length(stationdf$X1120[!is.na(stationdf$X1120)])))
+                                      length(stationdf$X1120[!is.na(stationdf$X1120)])),
+                                      Duration=c(max(stationdf$Year[!is.na(stationdf$X380)])-min(stationdf$Year[!is.na(stationdf$X380)]),
+                                                 max(stationdf$Year[!is.na(stationdf$X710)])-min(stationdf$Year[!is.na(stationdf$X710)]),
+                                                 max(stationdf$Year[!is.na(stationdf$X1060)])-min(stationdf$Year[!is.na(stationdf$X1060)]),
+                                                 max(stationdf$Year[!is.na(stationdf$X1120)])-min(stationdf$Year[!is.na(stationdf$X1120)])))
 atnacorYeardf
 
 #Dataframe with temporal regression correlations
