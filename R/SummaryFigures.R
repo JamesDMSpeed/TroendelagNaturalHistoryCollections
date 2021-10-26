@@ -362,12 +362,15 @@ bimodal <- c(rtruncnorm(round(length(!is.na(allbks))/2), mean=1946, sd=sd(allbks
           rtruncnorm(round(length(!is.na(allbks))/2), mean=1979, sd=sd(allbks,na.rm=T)/4),a=1900,b=2020)
 hist(bimodal)
 
+ks.test(allbks,bimodal)
 
+tiff("Figures/ECDFs.tif",width=8,height=6,units="in",res=150)
 plot(ecdf(allbks),xlab="Year",main="Empirical cumulative distribution function")#, xlim = c(1900:2020))
 plot(ecdf(randunif1), add = TRUE, lty = "dashed",col=2)
 plot(ecdf(randnorm1), add = TRUE, lty = "dashed",col=4)
 plot(ecdf(bimodal),add=TRUE,col=3)
 legend("topl",lwd=2,col=c(1:4),c("Distribution of breakpoints","Uniform distribution","Bimodal distribution","Normal distribution"))
 abline(v=c(1946,1979))
+dev.off()
 
 summary(allbks)
