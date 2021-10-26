@@ -7,6 +7,7 @@ library(mgcv)#GAMs
 library(gratia)#Gam derivatives
 library(visreg)#Gam plots
 library(metafor)
+library(segmented)
 
 
 #Read in data

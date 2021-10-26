@@ -206,7 +206,7 @@ forest(atnayearRMA,slab=atnarichRegdf$Elevation,main="Mayfly and stonefly specie
 
 #Bind up 
 yearlist<-list(birdyearRMA,plantyearRMA,marinedistyearRMA,animaldistyearRMA,plantdistyearRMA,fungidistyearRMA,jonsinvyearRMA,atnayearRMA)
-yearrmadf<-data.frame(dataset=c("Breeding bird abundance","Plant phenology","Marine invertebrate distributions","Terrestrial animal distributions","Plant distriubtions","Fungi distributions","Benthic invertebrate abundance","Mayfly and stone fly diversity"),
+yearrmadf<-data.frame(dataset=c("Breeding bird abundance","Plant phenology","Marine invertebrates","Animalia","Plantae","Fungi","Benthic invertebrate abundance","Mayfly and stone fly diversity"),
   est=rep(NA,times=length(yearlist)),
                       se=rep(NA,times=length(yearlist)),
                       ci.lb=rep(NA,times=length(yearlist)),
@@ -243,8 +243,8 @@ forest(atnatempRMA,slab=atnarichTempRegdf$Elevation,main="Mayfly and stonefly sp
 
 
 #Bind up 
-templist<-list(birdtempRMA,planttempRMA,marinedisttempRMA,animaldisttempRMA,plantdisttempRMA,fungidisttempRMA,jonsinvtempRMA,atnatempRMA)
-temprmadf<-data.frame(dataset=c("Breeding bird abundance","Plant phenology","Marine invertebrate distributions","Terrestrial animal distributions","Plant distriubtions","Fungi distributions","Benthic invertebrate abundance","Mayfly and stone fly diversity"),
+templist<-list(birdtempRMA,planttempRMA,animaldisttempRMA,plantdisttempRMA,fungidisttempRMA,jonsinvtempRMA,atnatempRMA)
+temprmadf<-data.frame(dataset=c("Breeding bird abundance","Plant phenology","Animalia","Plantae","Fungi","Benthic invertebrate abundance","Mayfly and stone fly diversity"),
                       est=rep(NA,times=length(templist)),
                       se=rep(NA,times=length(templist)),
                       ci.lb=rep(NA,times=length(templist)),
@@ -262,6 +262,45 @@ round(temprmadf[,2:5],3)
 
 
 
-tiff("Figures/PlantForest.tif",width = 5,height=20,res=150,units = "in")
-forest(plantdistyearRMA[plantleadingreg$phylum],slab=plantleadingreg$Species,main="Plant distributions",xlab="Regression slope",mlab="Model estimate",top=1)
+tiff("Figures/BirdForests.tif",width=10,height=6,units="in",res=150)
+par(mfrow=c(1,2))
+forest(birdyearRMA,slab=c("Willow warbler","Tree pipet","Bluethroat","Reed bunting","Redwing"),xlab="Change in terrortories per year",main="Breeding bird abundance: year",mlab="Model estimate",top=1)
+forest(birdtempRMA,slab=c("Willow warbler","Tree pipet","Bluethroat","Reed bunting","Redwing"),xlab=expression("Change in terrortories per "^degree*C),main="Breeding bird abundance: temperature",mlab="Model estimate",top=1)
 dev.off()
+
+tiff("Figures/PlantPhenForests.tif",width=10,height=6,units="in",res=150)
+par(mfrow=c(1,2))
+forest(plantyearRMA,slab=plantefregyear$Species,main="Plant phenology: year",xlab="Change in earliest date of peak flowering per year",mlab="Model estimate",top=1)
+forest(planttempRMA,slab=plantefregtemp$Species,main="Plant phenology: temperature",xlab=expression("Change in earliest date of peak flowering per "^degree*C),mlab="Model estimate",top=1)
+dev.off()
+
+tiff("Figures/BenthicInverts.tif",width=10,height=6,units="in",res=150)
+par(mfrow=c(1,2))
+forest(jonsinvyearRMA,slab=jonsinvMaxAbRegdf$Species,main="Benthic invertebrate abundnace: year",xlab="Change in invertebrate abundance per year",mlab="Model estimate",top=1)
+forest(jonsinvtempRMA,slab=jonsinvMaxAbTempRegdf$Species,main="Benthic invertebrate abundnace: temperature",xlab=expression("Change in invertebrate abundance per "^degree*C),mlab="Model estimate",top=1)
+dev.off()
+
+tiff("Figures/MayfliesStoneFlies_SR.tif",width=10,height=6,units="in",res=150)
+par(mfrow=c(1,2))
+forest(atnayearRMA,slab=atnarichRegdf$Elevation,main="Mayfly and stonefly species richness: year",xlab="Change in species richness per year",mlab="Model estimate",top=1)
+forest(atnatempRMA,slab=atnarichTempRegdf$Elevation,main="Mayfly and stonefly species richness: temperature",xlab=expression("Change in species richness per "^degree*C),mlab="Model estimate",top=1)
+dev.off()
+
+
+tiff("Figures/Distributions.tif",width=10,height=6,units="in",res=150)
+par(mfrow=c(1,2))
+with(yearrmadf[3:6,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE"),slab=dataset,main="Species distributions: year",xlab=expression(paste("Change in latitude"^degree, "per year")),mlab="Model estimate",top=1))
+with(temprmadf[3:5,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE"),slab=dataset,main="Species distributions: temperature",xlab=expression(paste("Change in latitude"^degree, "per "^degree*C)),mlab="Model estimate",top=1,ylim = c(-1.5,5.0)))
+dev.off()
+
+
+
+
+# Breakpoints -------------------------------------------------------------
+bpsDist<-read.csv("Data/SOD/breakpoints_SOD.csv",header=T,sep=";")
+bpsPlantphen<-read.csv("Data/Plants/PlantYearBreakpoints.csv")
+
+
+h1<-hist(c(bpsDist$bp1_lead_year[bpsDist$Duration>80],bpsDist$bp2_lead_year[bpsDist$Duration>80]),breaks=(1900:2020),ylim=c(0,15),xlab="Year",main="")
+hist(bpsPlantphen$Bp1[!is.na(bpsPlantphen$Bp1)],add=T,col=3,breaks=h1$breaks)
+abline(v=c(1946,1979),lwd=2,lty=2)
