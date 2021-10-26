@@ -300,7 +300,74 @@ dev.off()
 bpsDist<-read.csv("Data/SOD/breakpoints_SOD.csv",header=T,sep=";")
 bpsPlantphen<-read.csv("Data/Plants/PlantYearBreakpoints.csv")
 
-
-h1<-hist(c(bpsDist$bp1_lead_year[bpsDist$Duration>80],bpsDist$bp2_lead_year[bpsDist$Duration>80]),breaks=(1900:2020),ylim=c(0,15),xlab="Year",main="")
-hist(bpsPlantphen$Bp1[!is.na(bpsPlantphen$Bp1)],add=T,col=3,breaks=h1$breaks)
+#Histogram only >80 yrs
+h1<-hist(c(bpsDist$bp1_lead_year[bpsDist$Duration>80],bpsDist$bp2_lead_year[bpsDist$Duration>80]),breaks=(1900:2020),ylim=c(0,6),xlab="Year",main="")
+hist(bpsPlantphen$Bp1,add=T,col=3,breaks=h1$breaks)
 abline(v=c(1946,1979),lwd=2,lty=2)
+
+
+#Histogram all
+h1<-hist(c(bpsDist$bp1_lead_year,bpsDist$bp2_lead_year),breaks=(1900:2020),ylim=c(0,15),xlab="Year",main="")
+hist(bpsPlantphen$Bp1,add=T,col=3,breaks=h1$breaks)
+abline(v=c(1946,1979),lwd=2,lty=2)
+
+#Stacked barplot
+Yeardf<-data.frame(Year=1900:2020)
+distbps80<-c(bpsDist$bp1_lead_year[bpsDist$Duration>80],bpsDist$bp2_lead_year[bpsDist$Duration>80])
+distbps80peryear<-data.frame(tapply(distbps80,round(distbps80),length))
+distbps80peryear$Year<-rownames(distbps80peryear)
+names(distbps80peryear)[1]<-"BPs"
+ppbps<-bpsPlantphen$Bp1
+ppbpsperyear<-data.frame(tapply(ppbps,round(ppbps),length))
+ppbpsperyear$Year<-rownames(ppbpsperyear)
+names(ppbpsperyear)[1]<-"BPs"
+m1<-rbind(distbps80peryear,ppbpsperyear)
+m1$Type<-c(rep("Distribution",nrow(distbps80peryear)),rep("Phenology",times=nrow(ppbpsperyear)))
+
+m2<-merge(Yeardf,m1,all.x=T,by="Year")
+
+#mat1<-tapply(m1$BPs,list(m1$Type,m1$Year),sum)
+       
+#cbp<-c(1946,1979)
+#b2<-barplot(cbp)
+#b_bp<-barplot(mat1,beside=F) 
+#abline(v=b2)
+
+tiff("Figures/Breakpoints.tif",width=8,height=6,units="in",res=150)
+ggplot(data=m2,aes(x=Year,y=BPs,fill=Type))+geom_bar(stat="sum",position="stack",show.legend =  c("x"=T,"y"=T,size=F))+
+  geom_vline(xintercept = c(1946.5,1979.5), color = "black")+
+  ylab("Frequency")+
+  #theme_bw()+
+  scale_fill_manual("legend", values = c("Phenology" = "darkgreen", "Distribution" = "orange"))
+  #scale_fill_manual("legend", values = c("PP" = "gray85", "Dist" = "gray35"))
+dev.off()
+
+
+#Test fo normality and multimodality
+library(diptest)#Dip test
+library(truncnorm)#Truncated normal distributions for simulating bimodal distribution
+allbks<-c(distbps80,ppbps)
+shapiro.test(allbks)#Non normal
+dip.test(allbks)#Multimodal
+
+#Uniform distribution
+randunif1<-runif(length(!is.na(allbks)),min=1900,max=2020)
+#Normal (truncated at 1900 and 2020)
+randnorm1<-rtruncnorm(length(!is.na(allbks)),mean(allbks,na.rm=T),sd(allbks,na.rm=T),a=1900,b=2020)
+ks.test(allbks,randunif1)#Not uniform
+
+
+#Bimodal #Truncated. #SD/4 
+bimodal <- c(rtruncnorm(round(length(!is.na(allbks))/2), mean=1946, sd=sd(allbks,na.rm=T)/4,a=1900,b=2020),
+          rtruncnorm(round(length(!is.na(allbks))/2), mean=1979, sd=sd(allbks,na.rm=T)/4),a=1900,b=2020)
+hist(bimodal)
+
+
+plot(ecdf(allbks),xlab="Year",main="Empirical cumulative distribution function")#, xlim = c(1900:2020))
+plot(ecdf(randunif1), add = TRUE, lty = "dashed",col=2)
+plot(ecdf(randnorm1), add = TRUE, lty = "dashed",col=4)
+plot(ecdf(bimodal),add=TRUE,col=3)
+legend("topl",lwd=2,col=c(1:4),c("Distribution of breakpoints","Uniform distribution","Bimodal distribution","Normal distribution"))
+abline(v=c(1946,1979))
+
+summary(allbks)
