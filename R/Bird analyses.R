@@ -120,11 +120,16 @@ plot(birds$year,birds$graasisi,type='b',las=1,main="Redpoll")
 #Temporal correlations
 birdcoryeardf<-data.frame(species=names(birds)[3:10],r=rep(NA,times=8),n=rep(length(birds$lovsange[!is.na(birds$lovsange)]),times=8))
 birdregyeardf<-data.frame(species=names(birds)[3:10],b=rep(NA,times=8),se=rep(length(birds$lovsange[!is.na(birds$lovsange)]),times=8))
+birdregyearscaledf<-data.frame(species=names(birds)[3:10],b=rep(NA,times=8),se=rep(length(birds$lovsange[!is.na(birds$lovsange)]),times=8))
+
 
 for(i in 1:8){
 birdcoryeardf$r[i]<-cor(birds$year,birds[,2+i],use="pairwise.complete.obs")
 birdregyeardf$b[i]<-summary(lm(birds[,2+i]~birds$year))$coefficients[2,1]
 birdregyeardf$se[i]<-summary(lm(birds[,2+i]~birds$year))$coefficients[2,2]
+birdregyearscaledf$b[i]<-summary(lm(scale(birds[,2+i])~birds$year))$coefficients[2,1]
+birdregyearscaledf$se[i]<-summary(lm(scale(birds[,2+i])~birds$year))$coefficients[2,2]
+
 
 }
 
@@ -171,6 +176,7 @@ write.csv(birdcoryeardf,"Data/Birds/BirdYearCor.csv")
 write.csv(birdcortempdf,"Data/Birds/BirdTempCor.csv")
 write.csv(birdregyeardf,"Data/Birds/BirdYearReg.csv")
 write.csv(birdregtempdf,"Data/Birds/BirdTempReg.csv")
+write.csv(birdregyearscaledf,"Data/Birds/BirdYearScaleReg.csv")
 
 
 #Temperature models

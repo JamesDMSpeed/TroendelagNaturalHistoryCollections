@@ -63,6 +63,18 @@ atnaregYeardf<-data.frame(Elevation=c('380m','710m','1060m',"1120m"),
                               with(stationdf,summary(lm(X1120~Year))$coefficients[2,2])))
 atnaregYeardf
 
+#Dataframe with temporal regression correlations
+atnaregYearScaledf<-data.frame(Elevation=c('380m','710m','1060m',"1120m"),
+                          b=c(with(stationdf,summary(lm(scale(X380)~Year))$coefficients[2,1]),
+                              with(stationdf,summary(lm(scale(X710)~Year))$coefficients[2,1]),
+                              with(stationdf,summary(lm(scale(X1060)~Year))$coefficients[2,1]),
+                              with(stationdf,summary(lm(scale(X1120)~Year))$coefficients[2,1])),
+                          se=c(with(stationdf,summary(lm(scale(X380)~Year))$coefficients[2,2]),
+                               with(stationdf,summary(lm(scale(X710)~Year))$coefficients[2,2]),
+                               with(stationdf,summary(lm(scale(X1060)~Year))$coefficients[2,2]),
+                               with(stationdf,summary(lm(scale(X1120)~Year))$coefficients[2,2])))
+atnaregYearScaledf
+
 
 
 #Dataframe with temperature correlactions
@@ -110,6 +122,8 @@ forest(rmaatnaregtemp,slab=atnaregYeardf$Elevation,main="Atna mayflies & stonefl
 
 write.csv(atnacorYeardf,"Data/Inverts/AtnaCorYear.csv")
 write.csv(atnaregYeardf,"Data/Inverts/AtnaRegYear.csv")
+write.csv(atnaregYearScaledf,"Data/Inverts/AtnaRegYearScale.csv")
+
 write.csv(atnacorTempdf,"Data/Inverts/AtnaCorTemp.csv")
 write.csv(atnaregAnnualdf,"Data/Inverts/AtnaRegTemp.csv")
 

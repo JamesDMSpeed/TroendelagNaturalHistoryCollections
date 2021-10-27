@@ -14,8 +14,8 @@ library(ggplot2)
 #Read in correlation effect sizes
 
 #Plants
-plantefcoryear<-read.csv("Data/Plants/PlantYearCor.csv",header=T)
-plantefcoryear<-plantefcoryear[plantefcoryear$N>=5,]#Drop species with <5 years
+plantefcoryear1<-read.csv("Data/Plants/PlantYearCor.csv",header=T)
+plantefcoryear<-plantefcoryear1[plantefcoryear1$N>=5,]#Drop species with <5 years
 plantefcoryear$EcoEffect<-rep("Phenology",times=nrow(plantefcoryear))
 plantefcoryear$Kingdom<-rep("Plantae",times=nrow(plantefcoryear))
 
@@ -106,6 +106,47 @@ anova(lm2)
 lm2<-with(allcorefyear,lm(I(R^2) ~Kingdom+EcoEffect))
 anova(lm2)
 summary(lm2)
+
+
+##Duration vs effect size with standardised regression coefficients
+#Birds
+birdefregscaleyear<-read.csv("Data/Birds/BirdYearScaleReg.csv",header=T)
+birdefregscaleyear$Duration<-rep(51,times=nrow(birdefregscaleyear))
+birdefregscaleyear$species<-c("Willow warbler","Brambling","Fieldfare","Tree pipit","Bluethroat","Reed bunting","Redwing","Redpoll")
+birdefregscaleyear<-birdefregscaleyear[!birdefregscaleyear$species%in%c("Fieldfare","Brambling","Redpoll"),]
+names(birdefregscaleyear)[2:4]<-c("Species","b","se")
+birdefregscaleyear$EcoEffect<-rep("Abundance",times=nrow(birdefregscaleyear))
+birdefregscaleyear$Kingdom<-rep("Animalia",times=nrow(birdefregscaleyear))
+#Plants
+plantefregscaleyear<-read.csv("Data/Plants/PlantYearScaleReg.csv",header=T)
+plantefregscaleyear<-plantefregscaleyear[plantefcoryear1$N>=5,]#Drop species with <5 years
+plantefregscaleyear$Duration<-plantefcoryear$Duration
+plantefregscaleyear$EcoEffect<-rep("Phenology",times=nrow(plantefregscaleyear))
+plantefregscaleyear$Kingdom<-rep("Plantae",times=nrow(plantefregscaleyear))
+#Jonsvan
+jonsinvMaxAbScale<-read.csv("Data/Inverts/jonsinvMaxAbRegScaledf")
+jonsinvMaxAbScale$Duration<-jonsinvMaxAb$Duration
+jonsinvMaxAbScale$EcoEffect<-rep("Abundance",times=nrow(jonsinvMaxAb))
+jonsinvMaxAbScale$Kingdom<-rep("Animalia",times=nrow(jonsinvMaxAb))
+#Atna
+#Atna inverts
+atnarichscale<-read.csv("Data/Inverts/AtnaRegYearScale.csv")
+atnarichscale$Duration<-atnarich$Duration
+atnarichscale$EcoEffect<-rep("Diversity",times=nrow(atnarich))
+atnarichscale$Kingdom<-rep("Animalia",times=nrow(atnarich))
+names(atnarichscale)[names(atnarichscale)=="Elevation"]<-"Species"
+
+#Bind together
+allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
+
+#Plot study duration against R2
+
+durplot2<-ggplot(data=allcorefyearScale,aes(x=Duration,y=abs(b)))
+
+tiff("Figures/DurationsES_scaled.tif",width=8,height=6,res=150,units="in")
+durplot2+geom_point(aes(colour=EcoEffect,shape=Kingdom))+
+  labs(y = "Absolute scaled estimate")
+dev.off()
 
 # Main forest plots -------------------------------------------------------
 
