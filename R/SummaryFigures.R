@@ -136,17 +136,41 @@ atnarichscale$EcoEffect<-rep("Diversity",times=nrow(atnarich))
 atnarichscale$Kingdom<-rep("Animalia",times=nrow(atnarich))
 names(atnarichscale)[names(atnarichscale)=="Elevation"]<-"Species"
 
+#Terrestrial distributions
+indspp_scale<-read.csv("Data/SOD/regslopes_individualSpecies_scaled.csv",header=T)
+indsppscale10<-indspp_scale[indspp_scale$N>=10,]
+names(indsppscale10)[c(2,3,8)]<-c("Species","Kingdom","R")
+indsppscale10$EcoEffect<-rep("Distribution",times=nrow(indsppscale10))
+indsppscaleleading<-indsppscale10[,c(1:2,8,6,7,18,3)]
+indsppscaleleadingreg<-indsppscale10[,c(1:4,7,10:11,18)]
+names(indsppscaleleadingreg)[6:7]<-c("b","se")
+
 #Bind together
-allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
+allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)])#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
 
 #Plot study duration against R2
 
-durplot2<-ggplot(data=allcorefyearScale,aes(x=Duration,y=abs(b)))
+lmD2<-with(allcorefyearScale,lm(log(abs(b))~Duration))
+summary(lmD2)
+newdat<-data.frame(Duration=1:250)
+p1<-predict(lmD2,newdat,se.fit=T,interval=c("confidence"),type="response")
+#newdat$pred1<-p1$fit
+#newdat$se<-p1$se.fit
+dat1<-data.frame(cbind(p1$fit,Duration=newdat$Duration))
+with(allcorefyearScale,plot(Duration,abs(b),col=as.factor(EcoEffect),pch=levels(as.factor(Kingdom))))
+lines(newdat$Duration,log(newdat$pred1))
+
+
+durplot2<-ggplot(data=allcorefyearScale[order(allcorefyearScale$EcoEffect),],aes(x=Duration,y=(abs(b))))
 
 tiff("Figures/DurationsES_scaled.tif",width=8,height=6,res=150,units="in")
 durplot2+geom_point(aes(colour=EcoEffect,shape=Kingdom))+
-  labs(y = "Absolute scaled estimate")
+  labs(y = "Absolute scaled effect size")+
+  geom_line(data = dat1, aes(y = fit,x=Duration))+
+  stat_smooth(method='lm')+
+  scale_y_continuous(trans="log10")
 dev.off()
+
 
 # Main forest plots -------------------------------------------------------
 
@@ -399,8 +423,8 @@ ks.test(allbks,randunif1)#Not uniform
 
 
 #Bimodal #Truncated. #SD/4 
-bimodal <- c(rtruncnorm(round(length(!is.na(allbks))/2), mean=1946, sd=sd(allbks,na.rm=T)/4,a=1900,b=2020),
-          rtruncnorm(round(length(!is.na(allbks))/2), mean=1979, sd=sd(allbks,na.rm=T)/4),a=1900,b=2020)
+bimodal <- c(rtruncnorm(round(length(!is.na(allbks))/2), mean=1946, sd=sd(allbks,na.rm=T)/3,a=1900,b=2020),
+          rtruncnorm(round(length(!is.na(allbks))/2), mean=1979, sd=sd(allbks,na.rm=T)/3),a=1900,b=2020)
 hist(bimodal)
 
 ks.test(allbks,bimodal)

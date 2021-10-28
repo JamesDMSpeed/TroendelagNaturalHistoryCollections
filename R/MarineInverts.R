@@ -19,6 +19,7 @@ marineq10coryear<-data.frame(Species=levels(marineinverts$species_sp),R=(rep(NA,
 marineq10regyear<-data.frame(Species=levels(marineinverts$species_sp),b=(rep(NA,times=9)),se=rep(NA,times=9))
 marinemedcoryear<-data.frame(Species=levels(marineinverts$species_sp),R=(rep(NA,times=9)),N=rep(NA,times=9),Duration=rep(NA,times=9))
 marinemedregyear<-data.frame(Species=levels(marineinverts$species_sp),b=(rep(NA,times=9)),se=rep(NA,times=9))
+marineq90regyear_scale<-data.frame(Species=levels(marineinverts$species_sp),b=(rep(NA,times=9)),se=rep(NA,times=9))
 
 
 for(i in 1:9){
@@ -26,8 +27,12 @@ marineq90coryear$R[i]<-with(marineinverts[marineinverts$species_sp==levels(marin
 marineq90coryear$N[i]<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],length(year))
 marineq90coryear$Duration[i]<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],max(year)-min(year))
 lmI<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],lm(q90~year))
+lmI_scale<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],lm(scale(q90)~year))
 marineq90regyear$b[i]<-summary(lmI)$coefficients[2,1]
 marineq90regyear$se[i]<-summary(lmI)$coefficients[2,2]
+marineq90regyear_scale$b[i]<-summary(lmI_scale)$coefficients[2,1]
+marineq90regyear_scale$se[i]<-summary(lmI_scale)$coefficients[2,2]
+
 
 marineq10coryear$R[i]<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],cor(year,q10))
 marineq10coryear$N[i]<-with(marineinverts[marineinverts$species_sp==levels(marineinverts$species_sp)[i],],length(year))
@@ -46,6 +51,8 @@ marinemedregyear$se[i]<-summary(lmI)$coefficients[2,2]
 
 marineq90coryear
 marineq90regyear
+marineq90regyear_scale
+
 marineq10coryear
 marineq10regyear
 marinemedcoryear
@@ -71,4 +78,5 @@ write.csv(marineq10coryear,"Data/Marine invertebrates/marineeq10coryear")
 write.csv(marineq10regyear,"Data/Marine invertebrates/marineeq10regryear")
 write.csv(marineq90coryear,"Data/Marine invertebrates/marineeq90coryear")
 write.csv(marineq90regyear,"Data/Marine invertebrates/marineeq90regyear")
+write.csv(marineq90regyear_scale,"Data/Marine invertebrates/marineeq90regyear_scale")
 
