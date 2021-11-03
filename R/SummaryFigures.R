@@ -145,8 +145,16 @@ indsppscaleleading<-indsppscale10[,c(1:2,8,6,7,18,3)]
 indsppscaleleadingreg<-indsppscale10[,c(1:4,7,10:11,18)]
 names(indsppscaleleadingreg)[6:7]<-c("b","se")
 
+
+#Marine dists
+marineq90regScaleyear<-read.csv("Data/Marine invertebrates/marineeq90regyear_scale")
+marineq90regScaleyear$Duration<-marineq90coryear$Duration
+marineq90regScaleyear$Kingdom<-rep("Animalia",times=9)
+marineq90regScaleyear$EcoEffect<-c(rep("Distribution",times=9))
+
+
 #Bind together
-allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)])#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
+allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)],marineq90regScaleyear)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
 
 #Plot study duration against R2
 
@@ -359,6 +367,8 @@ with(temprmadf[3:5,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="F
 dev.off()
 
 
+distrmatemp<-with(temprmadf[3:5,],(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE")))
+distrmayear<-with(yearrmadf[3:6,],(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE")))
 
 
 # Breakpoints -------------------------------------------------------------
