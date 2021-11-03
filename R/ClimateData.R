@@ -97,23 +97,26 @@ plot(dTdt$data,dTdt$derivative,type='l')
 lines(dTdt$data,dTdt$upper,type='l',col=grey(0.5))
 lines(dTdt$data,dTdt$lower,type='l',col=grey(0.5))
 
-
+tiff("Figures/MAT.tif",height=8,width=6,res=150,units="in")
 par(mfrow=c(3,1))
-par(mar=c(1,5,1,1))
+par(mar=c(1,5,2,1))
 plot(1900:2020,yearavg,type='b',
      xlab="",ylab=expression("Annual Temperature ("*~degree*C*")"),las=1,pch=16,cex=0.5)
 abline(v=c(1946,1979),lty=2)
+mtext("A",side=3,adj=-0.1)
 plot(segAnnual,add=T)
 #lines(1900:2020,frollmean(yearavg,5),col=2,lwd=2)
 visreg(gam1,residuals=TRUE,xlab="")
 abline(v=c(1946,1979),lty=2)
+mtext("B",side=3,adj=-0.1)
 par(mar=c(5,5,1,1))
-plot(dTdt$data,dTdt$derivative,type='l',xlab="Year",ylim=c(-0.06,0.12),las=1)
+plot(dTdt$data,dTdt$derivative,type='l',xlab="Year",ylim=c(-0.06,0.12),las=1,ylab="dTemperature/dt")
 lines(dTdt$data,dTdt$upper,type='l',col=grey(0.5))
 lines(dTdt$data,dTdt$lower,type='l',col=grey(0.5))
 abline(h=0)
 abline(v=c(1946,1979),lty=2)
-
+mtext("C",side=3,adj=-0.1)
+dev.off()
 
 #Summer
 gamS<-gam(Summer ~ s(Year) , data = timeseriesdf, method = "REML")
@@ -189,6 +192,16 @@ temp200mAnn$Year<-rownames(temp200mAnn)
 temp200mdf<-merge.data.frame(temp200mAnn,yearseq,all.y=T)
 plot(temp200mdf$Year,temp200mdf$Temp200m,type='b',main="Max annual temp at 200m")
 
+tiff("Figures/MarineTemp.tif",width=6,height=4,units="in",res=150)
+plot(temp200mdf$Year,temp200mdf$Temp200m,type='b',main="Marine temperature",
+     ylab=expression("Maximum annual temperatre at 200 m depth ("*~degree*C*")"),
+     xlab="Year")
+dev.off()
+
+lmMT200<-lm(temp200mdf$Temp200m~as.numeric(as.character(temp200mdf$Year)))
+summary(lmMT200)
+
+
 write.csv(temp200mAnn,"Data/MarineMaxTemp200m.csv")
 
 
@@ -198,10 +211,10 @@ write.csv(temp200mAnn,"Data/MarineMaxTemp200m.csv")
 tempwithmar<-merge(temp200mAnn,data.frame(cbind(Year=1900:2020,yearavg)),all.y=T)
 
 par(mfrow=c(4,1))
-par(mar=c(1,5,1,1))
 plot(1900:2020,yearavg,type='b',
      xlab="",ylab=expression("Annual Temperature ("*~degree*C*")"),las=1,pch=16,cex=0.5)
 abline(v=c(1946,1979),lty=2)
+mtext(side=2,"A",las=1,adj=1)
 plot(segAnnual,add=T)
 #lines(1900:2020,frollmean(yearavg,5),col=2,lwd=2)
 visreg(gam1,residuals=TRUE,xlab="")
