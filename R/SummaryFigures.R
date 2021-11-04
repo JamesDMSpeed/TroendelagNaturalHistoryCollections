@@ -97,6 +97,7 @@ durplot+geom_point(aes(colour=EcoEffect,shape=Kingdom))+
 lm1<-with(allcorefyear,lm(I(R^2) ~Duration*Kingdom))
 summary(lm1)
 anova(lm1)
+
 lm2<-with(allcorefyear,lm(I(R^2) ~Duration+Kingdom))
 anova(lm2)
 
@@ -117,17 +118,44 @@ birdefregscaleyear<-birdefregscaleyear[!birdefregscaleyear$species%in%c("Fieldfa
 names(birdefregscaleyear)[2:4]<-c("Species","b","se")
 birdefregscaleyear$EcoEffect<-rep("Abundance",times=nrow(birdefregscaleyear))
 birdefregscaleyear$Kingdom<-rep("Animalia",times=nrow(birdefregscaleyear))
+
+birdefregscaletemp<-read.csv("Data/Birds/BirdTempScaleReg.csv",header=T)
+birdefregscaletemp$Duration<-rep(51,times=nrow(birdefregscaletemp))
+birdefregscaletemp$species<-c("Willow warbler","Brambling","Fieldfare","Tree pipit","Bluethroat","Reed bunting","Redwing","Redpoll")
+birdefregscaletemp<-birdefregscaletemp[!birdefregscaletemp$species%in%c("Fieldfare","Brambling","Redpoll"),]
+names(birdefregscaletemp)[2:4]<-c("Species","b","se")
+birdefregscaletemp$EcoEffect<-rep("Abundance",times=nrow(birdefregscaletemp))
+birdefregscaletemp$Kingdom<-rep("Animalia",times=nrow(birdefregscaletemp))
+
+
+
 #Plants
 plantefregscaleyear<-read.csv("Data/Plants/PlantYearScaleReg.csv",header=T)
 plantefregscaleyear<-plantefregscaleyear[plantefcoryear1$N>=5,]#Drop species with <5 years
 plantefregscaleyear$Duration<-plantefcoryear$Duration
 plantefregscaleyear$EcoEffect<-rep("Phenology",times=nrow(plantefregscaleyear))
 plantefregscaleyear$Kingdom<-rep("Plantae",times=nrow(plantefregscaleyear))
+
+plantefregscaletemp<-read.csv("Data/Plants/PlantTempScaleReg.csv",header=T)
+plantefregscaletemp<-plantefregscaletemp[plantefcoryear1$N>=5,]#Drop species with <5 temps
+plantefregscaletemp$Duration<-plantefcortemp$Duration
+plantefregscaletemp$EcoEffect<-rep("Phenology",times=nrow(plantefregscaletemp))
+plantefregscaletemp$Kingdom<-rep("Plantae",times=nrow(plantefregscaletemp))
+
+
+
 #Jonsvan
 jonsinvMaxAbScale<-read.csv("Data/Inverts/jonsinvMaxAbRegScaledf")
 jonsinvMaxAbScale$Duration<-jonsinvMaxAb$Duration
 jonsinvMaxAbScale$EcoEffect<-rep("Abundance",times=nrow(jonsinvMaxAb))
 jonsinvMaxAbScale$Kingdom<-rep("Animalia",times=nrow(jonsinvMaxAb))
+
+jonsinvMaxAbScaleTemp<-read.csv("Data/Inverts/jonsinvMaxAbTempRegScaledf")
+jonsinvMaxAbScaleTemp$Duration<-jonsinvMaxAb$Duration
+jonsinvMaxAbScaleTemp$EcoEffect<-rep("Abundance",times=nrow(jonsinvMaxAb))
+jonsinvMaxAbScaleTemp$Kingdom<-rep("Animalia",times=nrow(jonsinvMaxAb))
+
+
 #Atna
 #Atna inverts
 atnarichscale<-read.csv("Data/Inverts/AtnaRegYearScale.csv")
@@ -135,6 +163,13 @@ atnarichscale$Duration<-atnarich$Duration
 atnarichscale$EcoEffect<-rep("Diversity",times=nrow(atnarich))
 atnarichscale$Kingdom<-rep("Animalia",times=nrow(atnarich))
 names(atnarichscale)[names(atnarichscale)=="Elevation"]<-"Species"
+
+atnarichScaleTemp<-read.csv("Data/Inverts/AtnaRegTempScale.csv")
+atnarichScaleTemp$Duration<-atnarich$Duration
+atnarichScaleTemp$EcoEffect<-rep("Diversity",times=nrow(atnarich))
+atnarichScaleTemp$Kingdom<-rep("Animalia",times=nrow(atnarich))
+names(atnarichScaleTemp)[names(atnarichScaleTemp)=="Elevation"]<-"Species"
+
 
 #Terrestrial distributions
 indspp_scale<-read.csv("Data/SOD/regslopes_individualSpecies_scaled.csv",header=T)
@@ -155,15 +190,18 @@ marineq90regScaleyear$EcoEffect<-c(rep("Distribution",times=9))
 
 #Bind together
 allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)],marineq90regScaleyear)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
+#Not marine for temperatures
+allcoreftempScale<-rbind(plantefregscaletemp,birdefregscaletemp,jonsinvMaxAbScaleTemp,atnarichScaleTemp)#,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)],marineq90regScaleyear)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
 
-#Plot study duration against R2
+
+allcorefyearScale$ResponseType<-allcorefyearScale$EcoEffect
+#Plot study duration against ES
 
 lmD2<-with(allcorefyearScale,lm(log(abs(b))~Duration))
 summary(lmD2)
+anova(lmD2)
 newdat<-data.frame(Duration=1:250)
 p1<-predict(lmD2,newdat,se.fit=T,interval=c("confidence"),type="response")
-#newdat$pred1<-p1$fit
-#newdat$se<-p1$se.fit
 dat1<-data.frame(cbind(p1$fit,Duration=newdat$Duration))
 with(allcorefyearScale,plot(Duration,abs(b),col=as.factor(EcoEffect),pch=levels(as.factor(Kingdom))))
 lines(newdat$Duration,log(newdat$pred1))
@@ -172,12 +210,45 @@ lines(newdat$Duration,log(newdat$pred1))
 durplot2<-ggplot(data=allcorefyearScale[order(allcorefyearScale$EcoEffect),],aes(x=Duration,y=(abs(b))))
 
 tiff("Figures/DurationsES_scaled.tif",width=8,height=6,res=150,units="in")
-durplot2+geom_point(aes(colour=EcoEffect,shape=Kingdom))+
-  labs(y = "Absolute scaled effect size")+
-  geom_line(data = dat1, aes(y = fit,x=Duration))+
-  stat_smooth(method='lm')+
-  scale_y_continuous(trans="log10")
+durplot2+geom_point(aes(colour=ResponseType,shape=Kingdom))+
+  labs(y = "Absolute scaled effect size (log)")+
+#  geom_line(data = dat1, aes(y = fit,x=Duration))+
+  scale_y_continuous(trans="log10")+
+#  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",],method='lm',aes(colour=ResponseType),alpha=0.5)+
+#  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Distribution",],method='lm',aes(colour=ResponseType),alpha=1)+
+  stat_smooth(method='lm')
 dev.off()
+
+#Is there a releationship if we only look at dists
+lmDD<-with(allcorefyearScale[allcorefyearScale$EcoEffect=="Distribution",]
+                 ,lm(log(abs(b))~Duration))
+summary(lmDD)
+anova(lmDD)
+#Is there a releationship if we only look at phenology
+lmDP<-with(allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",]
+                 ,lm(log(abs(b))~Duration))
+summary(lmDP)
+anova(lmDP)
+
+
+#Temperature duration
+allcoreftempScale$DurationTruncated<-allcoreftempScale$Duration
+allcoreftempScale$DurationTruncated[allcoreftempScale$Duration>120]<-120
+
+lmTempES<-with(allcoreftempScale,lm((abs(b))~DurationTruncated))
+summary(lmTempES)
+
+durplotTemp2<-ggplot(data=allcoreftempScale[order(allcoreftempScale$EcoEffect),],aes(x=DurationTruncated,y=(abs(b))))
+
+#tiff("Figures/DurationsES_scaled_temp.tif",width=8,height=6,res=150,units="in")
+durplotTemp2+geom_point(aes(colour=EcoEffect,shape=Kingdom))+
+  labs(y = "Absolute scaled effect size")+
+  #geom_line()+
+  stat_smooth(method='lm')#+
+  #scale_y_continuous(trans="log10")
+#dev.off()
+
+
 
 
 # Main forest plots -------------------------------------------------------
@@ -388,7 +459,7 @@ abline(v=c(1946,1979),lwd=2,lty=2)
 
 #Stacked barplot
 Yeardf<-data.frame(Year=1900:2020)
-distbps80<-c(bpsDist$bp1_lead_year[bpsDist$Duration>80],bpsDist$bp2_lead_year[bpsDist$Duration>80])
+distbps80<-c(bpsDist$bp1_lead_year[bpsDist$Duration>=80],bpsDist$bp2_lead_year[bpsDist$Duration>80])
 distbps80peryear<-data.frame(tapply(distbps80,round(distbps80),length))
 distbps80peryear$Year<-rownames(distbps80peryear)
 names(distbps80peryear)[1]<-"BPs"
@@ -400,7 +471,7 @@ m1<-rbind(distbps80peryear,ppbpsperyear)
 m1$Type<-c(rep("Distribution",nrow(distbps80peryear)),rep("Phenology",times=nrow(ppbpsperyear)))
 
 m2<-merge(Yeardf,m1,all.x=T,by="Year")
-
+sum(m2$BPs,na.rm=T)#Number of breakpoints
 #mat1<-tapply(m1$BPs,list(m1$Type,m1$Year),sum)
        
 #cbp<-c(1946,1979)

@@ -141,6 +141,9 @@ plantphenTempCordf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.
 plantphenTempRegdf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.name)),
                                b=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))),
                                se=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))))
+plantphenTempRegScaledf<-data.frame(Species=levels(as.factor(plantphendat$Scientific.name)),
+                                b=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))),
+                                se=rep(NA,times=length(levels(as.factor(plantphendat$Scientific.name)))))
 
 
 speciesyrdf<-list()
@@ -176,6 +179,9 @@ plantphenRegScaledf$se[plantphenCordf$Species==spk$Scientific.name[1]]<-summary(
 
 plantphenTempRegdf$b[plantphenRegdf$Species==spk$Scientific.name[1]]<-summary(lm(spkdfClim$DoY~spkdfClim$Annual))$coefficients[2,1]
 plantphenTempRegdf$se[plantphenRegdf$Species==spk$Scientific.name[1]]<-summary(lm(spkdfClim$DoY~spkdfClim$Annual))$coefficients[2,2]
+plantphenTempRegScaledf$b[plantphenRegdf$Species==spk$Scientific.name[1]]<-summary(lm(scale(spkdfClim$DoY)~spkdfClim$Annual))$coefficients[2,1]
+plantphenTempRegScaledf$se[plantphenRegdf$Species==spk$Scientific.name[1]]<-summary(lm(scale(spkdfClim$DoY)~spkdfClim$Annual))$coefficients[2,2]
+
 }
 
 plantphenCordf
@@ -183,6 +189,7 @@ plantphenTempCordf
 plantphenRegdf
 plantphenRegScaledf
 plantphenTempRegdf
+plantphenTempRegScaledf
 speciesyrdf
 
 #Combine yrs into a single df
@@ -259,6 +266,7 @@ write.csv(plantphenTempCordf,"Data/Plants/PlantTempCor.csv")
 write.csv(segspeciesdf,"Data/Plants/PlantYearBreakpoints.csv")
 write.csv(plantphenRegdf,"Data/Plants/PlantYearReg.csv")
 write.csv(plantphenRegScaledf,"Data/Plants/PlantYearScaleReg.csv")
+write.csv(plantphenTempRegScaledf,"Data/Plants/PlantTempScaleReg.csv")
 
 write.csv(plantphenTempRegdf,"Data/Plants/PlantTempReg.csv")
 

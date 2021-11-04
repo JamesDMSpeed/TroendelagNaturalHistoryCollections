@@ -48,10 +48,16 @@ jonsinvTempCordf<-data.frame(Species=levels(as.factor(jonsinvclim$verbatimScient
 jonsinvTempRegdf<-data.frame(Species=levels(as.factor(jonsinvclim$verbatimScientificName)),
                                b=rep(NA,times=length(levels(as.factor(jonsinvclim$verbatimScientificName)))),
                                se=rep(NA,times=length(levels(as.factor(jonsinvclim$verbatimScientificName)))))
+jonsinvTempRegScaledf<-data.frame(Species=levels(as.factor(jonsinvclim$verbatimScientificName)),
+                             b=rep(NA,times=length(levels(as.factor(jonsinvclim$verbatimScientificName)))),
+                             se=rep(NA,times=length(levels(as.factor(jonsinvclim$verbatimScientificName)))))
+
 
 jonsinvMaxAbCordf<-jonsinvCordf
 jonsinvMaxAbRegdf<-jonsinvRegdf
 jonsinvMaxAbRegScaledf<-jonsinvRegScaledf
+jonsinvMaxAbTempRegScaledf<-jonsinvTempRegScaledf
+
 
 jonsinvMaxAbTempCordf<-jonsinvTempCordf
 jonsinvMaxAbTempRegdf<-jonsinvTempRegdf
@@ -87,7 +93,9 @@ for(k in 1:length(levels(jonsinvclim$verbatimScientificName))){
   jonsinvRegScaledf$se[jonsinvCordf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(scale(dfInvY$DoY)~dfInvY$Year))$coefficients[2,2]
   jonsinvTempRegdf$b[jonsinvRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(dfInvYClim$DoY~dfInvYClim$Annual))$coefficients[2,1]
   jonsinvTempRegdf$se[jonsinvRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(dfInvYClim$DoY~dfInvYClim$Annual))$coefficients[2,2]
-
+  jonsinvTempRegScaledf$b[jonsinvRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(scale(dfInvYClim$DoY)~dfInvYClim$Annual))$coefficients[2,1]
+  jonsinvTempRegScaledf$se[jonsinvRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(scale(dfInvYClim$DoY)~dfInvYClim$Annual))$coefficients[2,2]
+  
   jonsinvMaxAbCordf$R[jonsinvMaxAbCordf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-cor(dfInvY$Year,dfInvY$MaxAb,use='pairwise')
   jonsinvMaxAbCordf$N[jonsinvMaxAbCordf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-length(na.omit(dfInvY$MaxAb))
   jonsinvMaxAbCordf$Duration[jonsinvMaxAbCordf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-max(dfInvY$Year)-min(dfInvY$Year)
@@ -99,8 +107,9 @@ for(k in 1:length(levels(jonsinvclim$verbatimScientificName))){
   jonsinvMaxAbRegScaledf$se[jonsinvMaxAbCordf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(scale(dfInvY$MaxAb)~dfInvY$Year))$coefficients[2,2]
   jonsinvMaxAbTempRegdf$b[jonsinvMaxAbRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(dfInvYClim$MaxAb~dfInvYClim$Annual))$coefficients[2,1]
   jonsinvMaxAbTempRegdf$se[jonsinvMaxAbRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(dfInvYClim$MaxAb~dfInvYClim$Annual))$coefficients[2,2]
-  
-  
+  jonsinvMaxAbTempRegScaledf$b[jonsinvMaxAbRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(scale(dfInvYClim$MaxAb)~dfInvYClim$Annual))$coefficients[2,1]
+  jonsinvMaxAbTempRegScaledf$se[jonsinvMaxAbRegdf$Species==levels(jonsinvclim$verbatimScientificName)[k]]<-summary(lm(scale(dfInvYClim$MaxAb)~dfInvYClim$Annual))$coefficients[2,2]
+ 
   }
 
 jonsinvCordf
@@ -114,10 +123,12 @@ write.csv(jonsinvMaxAbCordf,"Data/Inverts/jonsinvMaxAbCordf")
 write.csv(jonsinvCordf,"Data/Inverts/jonsinvCordf")
 write.csv(jonsinvRegdf,"Data/Inverts/jonsinvRegdf")
 write.csv(jonsinvRegScaledf,"Data/Inverts/jonsinvRegScaledf")
+write.csv(jonsinvTempRegScaledf,"Data/Inverts/jonsinvTempRegScaledf")
 
 write.csv(jonsinvTempRegdf,"Data/Inverts/jonsinvTempRegdf")
 write.csv(jonsinvMaxAbRegdf,"Data/Inverts/jonsinvMaxAbRegdf")
 write.csv(jonsinvMaxAbRegScaledf,"Data/Inverts/jonsinvMaxAbRegScaledf")
+write.csv(jonsinvMaxAbTempRegScaledf,"Data/Inverts/jonsinvMaxAbTempRegScaledf")
 
 write.csv(jonsinvMaxAbTempRegdf,"Data/Inverts/jonsinvMaxAbTempRegdf")
 

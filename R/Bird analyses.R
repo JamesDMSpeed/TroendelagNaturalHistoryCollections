@@ -144,12 +144,17 @@ forest(rmabirdyrreg,slab=birdcoryeardf$species[c(1,4,5,6,7)],main="Birds - Year"
 #Temperature correlations
 birdcortempdf<-data.frame(species=names(birdclim)[3:10],r=rep(NA,times=8),n=rep(length(birdclim$lovsange[!is.na(birds$lovsange)]),times=8))
 birdregtempdf<-data.frame(species=names(birdclim)[3:10],b=rep(NA,times=8),se=rep(length(birdclim$lovsange[!is.na(birds$lovsange)]),times=8))
+birdregtempscaledf<-data.frame(species=names(birdclim)[3:10],b=rep(NA,times=8),se=rep(length(birdclim$lovsange[!is.na(birds$lovsange)]),times=8))
+
 
 for(i in 1:8){
   birdcortempdf$r[i]<-cor(birdclim$Annual,birdclim[,2+i],use="pairwise.complete.obs")
   birdregtempdf$b[i]<-summary(lm(birdclim[,2+i]~birdclim$Annual))$coefficients[2,1]
   birdregtempdf$se[i]<-summary(lm(birdclim[,2+i]~birdclim$Annual))$coefficients[2,2]
-  }
+  birdregtempscaledf$b[i]<-summary(lm(scale(birdclim[,2+i])~birdclim$Annual))$coefficients[2,1]
+  birdregtempscaledf$se[i]<-summary(lm(scale(birdclim[,2+i])~birdclim$Annual))$coefficients[2,2]
+  
+    }
 
 
 esbirdtemp<-escalc(measure="COR",ri=birdcortempdf$r,ni=birdcortempdf$n)
@@ -177,6 +182,7 @@ write.csv(birdcortempdf,"Data/Birds/BirdTempCor.csv")
 write.csv(birdregyeardf,"Data/Birds/BirdYearReg.csv")
 write.csv(birdregtempdf,"Data/Birds/BirdTempReg.csv")
 write.csv(birdregyearscaledf,"Data/Birds/BirdYearScaleReg.csv")
+write.csv(birdregtempscaledf,"Data/Birds/BirdTempScaleReg.csv")
 
 
 #Temperature models
