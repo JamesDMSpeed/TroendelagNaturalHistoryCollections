@@ -20,13 +20,17 @@ jonsinv$verbatimScientificName<-as.factor(jonsinv$verbatimScientificName)
 #Individuals per sample
 jonsinv$countpersample<-jonsinv$individualCount/jonsinv$`x (# of samples)`
 
+#Individuals per litre
+jonsinv$countperm3<-jonsinv$countpersample/25*1000#Each sample is 25 l in volume
+
+
 #Merge with climate
 jonsinvclim<-merge(jonsinv,climdata,by.x="Year",by.y = "Year",all.x = T,all.y = F)
 
 
 
 #For each species and year, maximum count
-tapply(jonsinvclim$countpersample,list(jonsinvclim$Year,jonsinvclim$verbatimScientificName),max)
+tapply(jonsinvclim$countperm3,list(jonsinvclim$Year,jonsinvclim$verbatimScientificName),max)
 
 
 #Looping through some correlations
@@ -72,8 +76,8 @@ for(k in 1:length(levels(jonsinvclim$verbatimScientificName))){
   for(i in 1:length(levels(as.factor(dfInv$Year)))){
     print(paste("i=",i))
     dfInvYi<-dfInv[dfInv$Year==levels(as.factor(dfInv$Year))[i],]
-    dfInvY$MaxAb[i]<-max(dfInvYi$countpersample)
-    dfInvY$DoY[i]<-dfInvYi$DayofYear[which.max(dfInvYi$countpersample)]
+    dfInvY$MaxAb[i]<-max(dfInvYi$countperm3)
+    dfInvY$DoY[i]<-dfInvYi$DayofYear[which.max(dfInvYi$countperm3)]
   }
  
  dfInvYClim<-merge(dfInvY,climdata,by='Year',all.x=T,all.y=F)
@@ -140,7 +144,7 @@ forest(jonsinvrma,main="Jonsvannet invertebrate phenology \n Day of year of maxi
 
 jonsinvMaxAbes<-escalc(yi=jonsinvMaxAbRegdf$b,sei=jonsinvMaxAbRegdf$se,measure="GEN")
 jonsinvMaxAbrma<-rma(jonsinvMaxAbes,method="FE",weighted=F)
-forest(jonsinvMaxAbrma,main="Jonsvannet invertebrate abundance \n Individuals per sample",xlab="Regression slope on year",slab=jonsinvMaxAbRegdf$Species)
+forest(jonsinvMaxAbrma,main="Jonsvannet invertebrate abundance \n Individuals per m3",xlab="Regression slope on year",slab=jonsinvMaxAbRegdf$Species)
 
 jonsinvtempes<-escalc(yi=jonsinvTempRegdf$b,sei=jonsinvTempRegdf$se,measure="GEN")
 jonsinvtemprma<-rma(jonsinvtempes,method="FE",weighted=F)
@@ -148,5 +152,5 @@ forest(jonsinvtemprma,main="Jonsvannet invertebrate phenology \n Day of year of 
 
 jonsinvMaxAbtempes<-escalc(yi=jonsinvMaxAbTempRegdf$b,sei=jonsinvMaxAbTempRegdf$se,measure="GEN")
 jonsinvMaxAbtemprma<-rma(jonsinvMaxAbtempes,method="FE",weighted=F)
-forest(jonsinvMaxAbtemprma,main="Jonsvannet invertebrate abundance \n Individuals per sample",xlab="Regression slope on temperature",slab=jonsinvMaxAbTempRegdf$Species)
+forest(jonsinvMaxAbtemprma,main="Jonsvannet invertebrate abundance \n Individuals per m3",xlab="Regression slope on temperature",slab=jonsinvMaxAbTempRegdf$Species)
 
