@@ -180,6 +180,16 @@ indsppscaleleading<-indsppscale10[,c(1:2,8,6,7,18,3)]
 indsppscaleleadingreg<-indsppscale10[,c(1:4,7,10:11,18)]
 names(indsppscaleleadingreg)[6:7]<-c("b","se")
 
+indspp_scale_temp<-read.csv("Data/SOD/regslopes_individualSpecies_temp_scaled.csv",header=T)
+indspp_scale_temp$Duration<-indspp_scale$Duration
+indsppscale_temp10<-indspp_scale_temp[indspp_scale$N>=10,]
+names(indsppscale_temp10)[c(2,3,10)]<-c("Species","Kingdom","R")
+indsppscale_temp10$EcoEffect<-rep("Distribution",times=nrow(indsppscale_temp10))
+#indsppscale_templeading<-indsppscale_temp10[,c(1:2,8,6,7,18,3)]
+indsppscale_templeadingreg<-indsppscale_temp10[,c(1:4,7,8:9,11)]
+names(indsppscale_templeadingreg)[6:7]<-c("b","se")
+
+
 
 #Marine dists
 marineq90regScaleyear<-read.csv("Data/Marine invertebrates/marineeq90regyear_scale")
@@ -191,21 +201,25 @@ marineq90regScaleyear$EcoEffect<-c(rep("Distribution",times=9))
 #Bind together
 allcorefyearScale<-rbind(plantefregscaleyear,birdefregscaleyear,jonsinvMaxAbScale,atnarichscale,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)],marineq90regScaleyear)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
 #Not marine for temperatures
-allcoreftempScale<-rbind(plantefregscaletemp,birdefregscaletemp,jonsinvMaxAbScaleTemp,atnarichScaleTemp)#,indsppscaleleadingreg[,c(1:2,6:7,5,3,8)],marineq90regScaleyear)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
+allcoreftempScale<-rbind(plantefregscaletemp,birdefregscaletemp,jonsinvMaxAbScaleTemp,atnarichScaleTemp,indsppscale_templeadingreg[,c(1:2,6:7,5,8,3)])#,marineq90regScaleyear)#,marineq90coryear,indsppleading,jonsinvMaxAb,atnarich)
 
 
 allcorefyearScale$ResponseType<-allcorefyearScale$EcoEffect
+allcoreftempScale$ResponseType<-allcoreftempScale$EcoEffect
+
 #Plot study duration against ES
 
 lmD2<-with(allcorefyearScale,lm(log(abs(b))~Duration))
 summary(lmD2)
 anova(lmD2)
-newdat<-data.frame(Duration=1:250)
-p1<-predict(lmD2,newdat,se.fit=T,interval=c("confidence"),type="response")
-dat1<-data.frame(cbind(p1$fit,Duration=newdat$Duration))
-with(allcorefyearScale,plot(Duration,abs(b),col=as.factor(EcoEffect),pch=levels(as.factor(Kingdom))))
-lines(newdat$Duration,log(newdat$pred1))
-
+#newdat<-data.frame(Duration=1:250)
+#p1<-predict(lmD2,newdat,se.fit=T,interval=c("confidence"),type="response")
+#dat1<-data.frame(cbind(p1$fit,Duration=newdat$Duration))
+#with(allcorefyearScale,plot(Duration,abs(b),col=as.factor(EcoEffect),pch=levels(as.factor(Kingdom))))
+#lines(newdat$Duration,log(newdat$pred1))
+lmDT<-with(allcoreftempScale,lm(log(abs(b))~Duration))
+summary(lmDT)
+anova(lmDT)
 
 durplot2<-ggplot(data=allcorefyearScale[order(allcorefyearScale$EcoEffect),],aes(x=Duration,y=(abs(b))))
 
@@ -219,16 +233,55 @@ durplot2+geom_point(aes(colour=ResponseType,shape=Kingdom))+
   stat_smooth(method='lm')
 dev.off()
 
+durplot2_temp<-ggplot(data=allcoreftempScale[order(allcoreftempScale$EcoEffect),],aes(x=Duration,y=(abs(b))))
+durplot2_temp+geom_point(aes(colour=ResponseType,shape=Kingdom))+
+  labs(y = "Absolute scaled effect size (log)")+
+  #  geom_line(data = dat1, aes(y = fit,x=Duration))+
+     scale_y_continuous(trans="log10")+
+  #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",],method='lm',aes(colour=ResponseType),alpha=0.5)+
+  #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Distribution",],method='lm',aes(colour=ResponseType),alpha=1)+
+  stat_smooth(method='lm')
+
+#Joint ggplot
+allscaleEFboth<-rbind(allcorefyearScale,allcoreftempScale)
+allscaleEFboth$Predictor<-c(rep("Year",times=nrow(allcorefyearScale)),rep("Temperature",times=nrow(allcoreftempScale)))
+
+tiff("Figures/DurationsESBoth_scaled.tif",width=8,height=7,res=150,units="in")
+durplotBoth<-ggplot(data=allscaleEFboth[order(allscaleEFboth$EcoEffect),],aes(x=Duration,y=(abs(b))))
+durplotBoth+geom_point(aes(colour=ResponseType,shape=Kingdom))+
+  labs(y = "Absolute scaled effect size (log)")+
+  #  geom_line(data = dat1, aes(y = fit,x=Duration))+
+  scale_y_continuous(trans="log10")+
+  #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",],method='lm',aes(colour=ResponseType),alpha=0.5)+
+  #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Distribution",],method='lm',aes(colour=ResponseType),alpha=1)+
+  stat_smooth(method='lm')+
+  facet_grid(rows=vars(Predictor),as.table = F)
+dev.off()
+                            
+                            
+                            
 #Is there a releationship if we only look at dists
 lmDD<-with(allcorefyearScale[allcorefyearScale$EcoEffect=="Distribution",]
                  ,lm(log(abs(b))~Duration))
 summary(lmDD)
 anova(lmDD)
+
+lmDDT<-with(allcoreftempScale[allcoreftempScale$EcoEffect=="Distribution",]
+                  ,lm(log(abs(b))~Duration))
+summary(lmDDT)
+anova(lmDDT)
+
+
 #Is there a releationship if we only look at phenology
 lmDP<-with(allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",]
                  ,lm(log(abs(b))~Duration))
 summary(lmDP)
 anova(lmDP)
+
+lmDPT<-with(allcoreftempScale[allcoreftempScale$EcoEffect=="Phenology",]
+           ,lm(log(abs(b))~Duration))
+summary(lmDPT)
+anova(lmDPT)
 
 
 #Temperature duration
@@ -479,10 +532,12 @@ forest(birdtempRMA,xlim=c(-10,20),slab=NA,xlab=expression("Change in terrortorie
 par(fig=c(0,0.6,rowsps[4],1),new=T)
 forest(plantyearRMA,slab=plantefregyear$Species,main="",xlab="Change in earliest date of peak flowering per year",mlab="Plant phenology",top=1)
 par(fig=c(0.6,1,rowsps[4],1),new=T)
-forest(planttempRMA,xlim=c(-20,40),slab=NA,main="",xlab=expression("Change in earliest date of peak flowering per "^degree*C),mlab="",top=1)
-
+forest(planttempRMA,xlim=c(-20,40),efac=c(2,1,3),slab=NA,main="",xlab=expression("Change in earliest date of peak flowering per "^degree*C),mlab="",top=1,col=2,border=2)
+points(plantefregtemp$b,22:1,col=2,pch=15)
 dev.off()
 }
+#efac
+#Points -> colour to match fig4
 
 # Breakpoints -------------------------------------------------------------
 bpsDist<-read.csv("Data/SOD/breakpoints_SOD.csv",header=T,sep=";")
