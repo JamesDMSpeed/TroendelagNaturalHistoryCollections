@@ -249,13 +249,15 @@ allscaleEFboth$Predictor<-c(rep("Year",times=nrow(allcorefyearScale)),rep("Tempe
 tiff("Figures/DurationsESBoth_scaled.tif",width=8,height=7,res=150,units="in")
 durplotBoth<-ggplot(data=allscaleEFboth[order(allscaleEFboth$EcoEffect),],aes(x=Duration,y=(abs(b))))
 durplotBoth+geom_point(aes(colour=ResponseType,shape=Kingdom))+
-  labs(y = "Absolute scaled effect size (log)")+
+  labs(y = "Absolute scaled effect size (log)", x= "Duration (years)")+
   #  geom_line(data = dat1, aes(y = fit,x=Duration))+
   scale_y_continuous(trans="log10")+
-  #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",],method='lm',aes(colour=ResponseType),alpha=0.5)+
+    #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Phenology",],method='lm',aes(colour=ResponseType),alpha=0.5)+
   #  stat_smooth(data=allcorefyearScale[allcorefyearScale$EcoEffect=="Distribution",],method='lm',aes(colour=ResponseType),alpha=1)+
   stat_smooth(method='lm')+
-  facet_grid(rows=vars(Predictor),as.table = F)
+  #facet_grid(rows=vars(Predictor),as.table = F)+
+  facet_wrap(vars(Predictor),nrow=2,strip.position = "top",as.table = F)+
+  theme_bw()
 dev.off()
                             
                             
@@ -508,38 +510,56 @@ rowsps<-c(4/51,8/51,24/51,29/51)
 
 rowsps<-c(6/51,12/51,26/51,32/51)
 
+#Colours to match ggplots
+cols<-scales::hue_pal()(4)
+
 
 tiff("Figures/BigForestTest.tif",height=20,width=8,units="in",res=150)
 {
 par(fig=c(0,0.6,0,rowsps[1]))
 par(mar=c(4,1,2,1))
-with(yearrmadf[3:6,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE"),slab=dataset,main="",
-                            xlab=expression(paste("Change in latitude (", degree,"N year"^-1,")")),mlab="Overall",top=1))
+with(yearrmadf[3:6,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE"),efac=c(2,2,3),slab=dataset,main="",
+                              xlab=expression(paste("Change in latitude (", degree,"N year"^-1,")")),mlab="Overall",top=1,psize=0.1,col=cols[2],digits=3,xlim=c(-0.025,0.035)))
+points(yearrmadf$est[3:6],4:1,pch=c(16,16,15,17),cex=1.5,col=cols[2])
 mtext("Latitudinal distributions",side=3,adj=0,line=1.5,font=2)
 par(fig=c(0.6,1,0,rowsps[1]),new=T)
-with(temprmadf[3:5,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE"),xlim=c(-0.2,0.6),slab=NA,main="",xlab=expression(paste("Change in latitude (", degree,"N ",degree,"C"^-1,")")),mlab="",top=1,ylim = c(-1.5,5.0)))
+with(temprmadf[3:5,],forest(rma(yi=est,sei=se,measure="GEN",weighted=F,method="FE"),xlim=c(-0.2,0.6),efac=c(2,2,3),slab=NA,main="",xlab=expression(paste("Change in latitude (", degree,"N ",degree,"C"^-1,")")),mlab="",top=1,ylim = c(-1.5,5.0),col=cols[2],psize = 0.1))
+points(temprmadf$est[3:5],3:1,pch=c(16,15,17),cex=1.5,col=cols[2])
+
 par(fig=c(0,0.6,rowsps[1],rowsps[2]),new=T)
-forest(atnayearRMA,slab=atnarichRegdf$Elevation,main="",xlab=expression(paste("Change in richness (species year"^-1,")")),mlab="Overall",top=1)
+forest(atnayearRMA,efac=c(2,2,3),slab=atnarichRegdf$Elevation,main="",xlab=expression(paste("Change in richness (species year"^-1,")")),mlab="Overall",top=1,col=cols[3],psize=0.1)
+points(atnarichRegdf$b,4:1,col=cols[3],pch=16,cex=1.5)
 mtext("Mayfly and stonefly diversity",side=3,adj=0,line=1.5,font=2)
 par(fig=c(0.6,1,rowsps[1],rowsps[2]),new=T)
-forest(atnatempRMA,slab=NA,xlim=c(-1,6),main="",xlab=expression(paste("Change in richness (species ",degree,"C"^-1,")")),mlab="",top=1)
+forest(atnatempRMA,efac=c(2,2,3),slab=NA,xlim=c(-1,4),main="",xlab=expression(paste("Change in richness (species ",degree,"C"^-1,")")),mlab="",top=1,col=cols[3],psize=0.1)
+points(atnarichTempRegdf$b,4:1,col=cols[3],pch=16,cex=1.5)
+
+
 par(fig=c(0,0.6,rowsps[2],rowsps[3]),new=T)
-forest(jonsinvyearRMA,slab=jonsinvMaxAbRegdf$Species,digits=0,main="",xlab=expression(paste("Change in abundance (individuals m"^-3,"year"^-1,")")),mlab="Overall",top=1)
+forest(jonsinvyearRMA,efac=c(2,2,2),slab=jonsinvMaxAbRegdf$Species,digits=0,main="",xlab=expression(paste("Change in abundance (inds. m"^-3," year"^-1,")")),mlab="Overall",top=1,col=cols[1],psize=0.1)
+points(jonsinvMaxAbRegdf$b,16:1,col=cols[1],pch=16,cex=1.5)
 mtext("Limnic zooplankton abundance",side=3,adj=0,line=1.1,font=2)
 par(fig=c(0.6,1,rowsps[2],rowsps[3]),new=T)
-forest(jonsinvtempRMA,slab=NA,xlim=c(-10000,200000),digits=0,main="",xlab=expression(paste("Change in abundance (individuals m"^-3,degree,"C"^-1,")")),mlab="",top=1)
+forest(jonsinvtempRMA,efac=c(2,2,2),slab=NA,xlim=c(-8000,300000),digits=0,main="",xlab=expression(paste("Change in abundance (inds. m"^-3,~degree,"C"^-1,")")),mlab="",top=1,col=cols[1],psize=0.1)
+points(jonsinvMaxAbTempRegdf$b,16:1,col=cols[1],pch=16,cex=1.5)
+
+
 par(fig=c(0,0.6,rowsps[3],rowsps[4]),new=T)
 #forest(birdyearRMA,slab=c("Willow warbler","Tree pipet","Bluethroat","Reed bunting","Redwing"),xlab="Change in terrortories per year",main="",mlab="Breeding bird abundance",top=1)
-forest(birdyearRMA,slab=c("Phylloscopus trochilus","Anthus trivialis","Luscinia svecica","Emberiza schoeniclus","Turdus iliacus"),xlab="Change in terrortories per year",main="",mlab="Overall",top=1)
+forest(birdyearRMA,xlim=c(-3,1.8),efac=c(3,3,4),slab=c("Phylloscopus trochilus","Anthus trivialis","Luscinia svecica","Emberiza schoeniclus","Turdus iliacus"),xlab=expression(paste("Change in terrortories (km"^-2," year"^-1,")")),main="",mlab="Overall",top=1,col=cols[1],psize=0.1)
+points(birdefregyear$b,5:1,col=cols[1],pch=16,cex=1.5)
 mtext("Breeding bird abundance",side=3,adj=0,line=1.5,font=2)
 par(fig=c(0.6,1,rowsps[3],rowsps[4]),new=T)
-forest(birdtempRMA,xlim=c(-10,20),slab=NA,xlab=expression(paste("Change in terrortories  km"^-2, degree, "C"^-1)),main="",mlab="",top=1)
+forest(birdtempRMA,efac=c(3,3,4),xlim=c(-10,20),slab=NA,xlab=expression(paste("Change in terrortories  (km"^-2,~degree, "C"^-1,")")),main="",mlab="",top=1,col=cols[1],psize=0.1)
+points(birdefregtemp$b,5:1,col=cols[1],pch=16,cex=1.5)
+
 par(fig=c(0,0.6,rowsps[4],1),new=T)
-forest(plantyearRMA,slab=plantefregyear$Species,main="",xlab=expression(paste("Change in peak flowering (days year"^-1,")")),mlab="Overall",top=1)
+forest(plantyearRMA,efac=c(2,2,2),slab=plantefregyear$Species,main="",xlab=expression(paste("Change in peak flowering (days year"^-1,")")),mlab="Overall",top=1,psize=0.1,col=cols[4])
+points(plantefregyear$b,22:1,col=cols[4],pch=15,cex=1.5)
 mtext("Plant flowering phenology",side=3,adj=0,font=2)
 par(fig=c(0.6,1,rowsps[4],1),new=T)
-forest(planttempRMA,xlim=c(-20,40),efac=c(2,2,3),slab=NA,main="",xlab=expression(paste("Change in peak flowering (days ",degree,"C"^-1,")")),mlab="",top=1,col=2,border=2)
-points(plantefregtemp$b,22:1,col=2,pch=15)
+forest(planttempRMA,xlim=c(-20,40),efac=c(2,2,2),slab=NA,main="",xlab=expression(paste("Change in peak flowering (days ",degree,"C"^-1,")")),mlab="",top=1,col=cols[4],psize=0.1)
+points(plantefregtemp$b,22:1,col=cols[4],pch=15,cex=1.5)
 dev.off()
 }
 #efac for big polygon
@@ -584,9 +604,9 @@ sum(m2$BPs,na.rm=T)#Number of breakpoints
 
 tiff("Figures/Breakpoints.tif",width=8,height=6,units="in",res=150)
 ggplot(data=m2,aes(x=Year,y=BPs,fill=Type))+geom_bar(stat="sum",position="stack",show.legend =  c("x"=T,"y"=T,size=F))+
-  geom_vline(xintercept = c(1946.5,1979.5), color = "black")+
+  geom_vline(xintercept = c(1946.5,1979.5), color = "black",size=1.5,linetype="longdash")+
   ylab("Frequency")+
-  #theme_bw()+
+  theme_bw()+
   scale_fill_manual("legend", values = c("Phenology" = "darkgreen", "Distribution" = "orange"))
   #scale_fill_manual("legend", values = c("PP" = "gray85", "Dist" = "gray35"))
 dev.off()
@@ -615,10 +635,10 @@ ks.test(allbks,bimodal)
 
 tiff("Figures/ECDFs.tif",width=8,height=6,units="in",res=150)
 plot(ecdf(allbks),xlab="Year",main="Empirical cumulative distribution function")#, xlim = c(1900:2020))
-plot(ecdf(randunif1), add = TRUE, lty = "dashed",col=2)
-plot(ecdf(randnorm1), add = TRUE, lty = "dashed",col=4)
-plot(ecdf(bimodal),add=TRUE,col=3)
-legend("topl",lwd=2,col=c(1:4),c("Distribution of breakpoints","Uniform distribution","Bimodal distribution","Normal distribution"))
+plot(ecdf(randunif1), add = TRUE, lty = "dashed",col=grey(0.8))
+plot(ecdf(randnorm1), add = TRUE, lty = "dashed",col=grey(0.6))
+plot(ecdf(bimodal),add=TRUE,col=grey(0.4))
+legend("topl",lwd=2,col=c(1,grey(0.8),grey(0.6),grey(0.4)),c("Distribution of breakpoints","Uniform distribution","Normal distribution","Bimodal distribution"))
 abline(v=c(1946,1979))
 dev.off()
 
