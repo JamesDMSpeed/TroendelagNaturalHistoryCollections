@@ -45,3 +45,16 @@ esleading<-escalc(yi=indspp10$regslope_year_leading,sei=indspp10$se_year_leading
 rmaleading<-rma(esleading,method="FE",weighted=T,mods=~indspp10$kingdom-1)
 rmaleading
 forest(rmaleading,slab=indspp10$species)
+
+
+#Table for individual spp
+sppdistyr_scaled<-read.csv("Data/SOD/regslopes_individualSpecies_scaled.csv",header=T)
+sppdisttemp_scaled<-read.csv("Data/SOD/regslopes_individualSpecies_temp_scaled.csv",header=T)
+
+sppdistyr_scaled2<-sppdistyr_scaled[,c(2:4,6,10,11)]
+sppdisttemp_scaled2<-sppdisttemp_scaled[,c(2,8:9)]
+
+names(sppdisttemp_scaled2)[2:3]<-c("b_temperature","se_temperature")
+names(sppdistyr_scaled2)[5:6]<-c("b_year","se_year")
+
+combineddf<-merge(sppdistyr_scaled2,sppdisttemp_scaled2,by="species")
